@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<!-- Single-file build: 서버 없이 브라우저에서 바로 열기 가능 (file://). 외부 CSS/JS 없음. -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Corporate QR - GTM Strategy</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; font-family: sans-serif; background: #0f0f12; color: #e8e8ed; }
+    .app { max-width: 1140px; margin: 0 auto; padding: 1rem 1.25rem; }
+    header { border-bottom: 1px solid #2a2a30; padding-bottom: 0.75rem; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
+    header h1 { margin: 0 0 0.2rem; font-size: 1.65rem; font-weight: 700; }
+    header p { margin: 0; font-size: 0.8rem; color: #8b8b96; }
+    .page-nav { display: flex; gap: 0.5rem; }
+    .page-nav button { background: #18181c; color: #8b8b96; border: 1px solid #2a2a30; border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.8rem; cursor: pointer; }
+    .page-nav button:hover { color: #e8e8ed; border-color: #3a3a42; }
+    .page-nav button.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .exec-summary { background: rgba(99, 102, 241, 0.12); border-left: 4px solid #6366f1; border-radius: 0 8px 8px 0; padding: 0.9rem 1rem; margin-bottom: 1rem; font-size: 0.9rem; line-height: 1.5; }
+    .exec-summary strong { color: #a5b4fc; }
+
+    .tabs { margin-bottom: 1rem; padding: 0.5rem 0; border-bottom: 1px solid #2a2a30; }
+    .tabs-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .tabs-row:last-child { margin-bottom: 0; }
+    .tabs-row.tabs-row-separator { border-top: 1px solid #2a2a30; padding-top: 0.5rem; margin-top: 0.25rem; }
+    .tabs-label { font-size: 0.8rem; color: #8b8b96; margin-right: 0.25rem; width: 10.5rem; min-width: 10.5rem; }
+    .tabs button { background: #18181c; color: #8b8b96; border: 1px solid #2a2a30; border-radius: 6px; padding: 0.4rem 0.65rem; font-size: 0.78rem; cursor: pointer; }
+    .tabs button:hover { color: #e8e8ed; border-color: #3a3a42; }
+    .tabs button.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+
+    .chart-panel { display: none; }
+    .chart-panel.active { display: block; }
+    .chart-panel-industry { display: none; }
+    .chart-panel-industry.active { display: block; }
+
+    .section-divider { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 2px solid #2a2a30; }
+    .section-heading { font-size: 0.85rem; color: #8b8b96; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; font-weight: 600; }
+
+    .chart-card { background: #18181c; border: 1px solid #2a2a30; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; position: relative; }
+    .chart-card h3 { margin: 0 0 0.2rem; font-size: 0.95rem; }
+    .chart-card .desc { margin: 0 0 0.6rem; font-size: 0.75rem; color: #8b8b96; }
+    .chart-filter { position: absolute; top: 1rem; right: 1rem; }
+    .chart-filter select { background: #2a2a30; color: #e8e8ed; border: 1px solid #3a3a42; border-radius: 6px; padding: 0.35rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+    .chart-wrap { margin-top: 0.5rem; }
+
+    .vertical-bar-wrap { width: 100%; height: 360px; display: flex; align-items: flex-end; gap: 3px; padding: 0 0 32px 0; position: relative; }
+    .vertical-bar-cell { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; height: 320px; justify-content: flex-end; }
+    .vertical-bar { width: 100%; max-width: 36px; min-height: 4px; border-radius: 4px 4px 0 0; background: #6366f1; position: relative; }
+    .vertical-bar.above-avg { background: #6366f1; }
+    .vertical-bar.below-avg { background: #e8e8ed; }
+    .vertical-bar-value { font-size: 0.6rem; color: #e8e8ed; font-weight: 600; margin-bottom: 2px; white-space: nowrap; }
+    .vertical-bar-label { font-size: 0.6rem; color: #8b8b96; margin-top: 4px; text-align: center; transform: rotate(-45deg); white-space: nowrap; max-width: 56px; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+    .vertical-bar-avg { position: absolute; left: 0; right: 0; height: 2px; background: #dc2626; z-index: 2; pointer-events: none; }
+    .vertical-y-label { position: absolute; left: 4px; font-size: 0.7rem; color: #8b8b96; }
+    .contribution-wrap { width: 100%; min-height: 380px; }
+    .contribution-bar-wrap { display: flex; align-items: flex-end; gap: 4px; padding: 0 0 36px 0; position: relative; height: 340px; }
+    .contribution-bar-cell { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; height: 300px; justify-content: flex-end; }
+    .contribution-stack { width: 100%; max-width: 40px; height: 100%; display: flex; flex-direction: column-reverse; border-radius: 4px 4px 0 0; overflow: hidden; }
+    .contribution-stack .seg-micro { background: #d1d5db; }
+    .contribution-stack .seg-small { background: #8b5cf6; }
+    .contribution-stack .seg-medium { background: #5b21b6; }
+    .contribution-avg-line { position: absolute; left: 0; right: 0; height: 0; border-top: 2px dashed #dc2626; z-index: 2; pointer-events: none; }
+    .contribution-bar-label { font-size: 0.6rem; color: #8b8b96; margin-top: 6px; text-align: center; transform: rotate(-45deg); white-space: nowrap; max-width: 52px; overflow: hidden; text-overflow: ellipsis; }
+
+    .line-chart-wrap { width: 100%; height: 400px; }
+    .line-chart-wrap svg { width: 100%; height: 100%; }
+    .avg-line { stroke: #dc2626; stroke-width: 2; stroke-dasharray: 6 4; }
+    .country-line { fill: none; stroke: #6366f1; stroke-width: 1.5; }
+    .line-point-value { font-size: 8px; fill: #e8e8ed; text-anchor: middle; }
+
+    .stacked-row { margin-bottom: 0.5rem; }
+    .stacked-label { font-size: 0.75rem; margin-bottom: 0.2rem; color: #8b8b96; }
+    .stacked-track { height: 24px; border-radius: 4px; overflow: hidden; display: flex; max-width: 100%; width: 720px; cursor: default; position: relative; }
+    .stacked-seg { height: 100%; min-width: 0; transition: opacity 0.15s; cursor: pointer; }
+    .stacked-seg:hover { opacity: 0.9; }
+    .sector-tooltip { position: fixed; background: #1f1f24; border: 1px solid #3a3a42; border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.8rem; color: #e8e8ed; z-index: 100; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: none; white-space: nowrap; }
+    .sector-tooltip.visible { display: block; }
+    .segmentation-pie-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .segmentation-pie-container { width: 380px; height: 380px; position: relative; flex-shrink: 0; }
+    .segmentation-pie-container svg { width: 100%; height: 100%; }
+    .segmentation-pie-container path.seg-slice { cursor: pointer; transition: opacity 0.15s; }
+    .segmentation-pie-container path.seg-slice:hover { opacity: 0.9; }
+    .segmentation-legend { flex: 1; min-width: 200px; padding: 0.5rem 0; }
+    .segmentation-legend h4 { margin: 0 0 0.5rem; font-size: 0.85rem; color: #a5b4fc; }
+    .seg-subtitle { margin: 1.25rem 0 0.2rem; font-size: 0.95rem; font-weight: 700; color: #e8e8ed; }
+    .sector-insight-callout { background: rgba(160, 160, 168, 0.08); border-left: 3px solid #6b7280; border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; margin-bottom: 1rem; font-size: 0.8rem; line-height: 1.55; }
+    .sector-insight-callout strong { color: #9ca3af; }
+    .sector-insight-callout .insight-label { display: inline-block; font-size: 0.68rem; font-weight: 600; color: #d1d5db; background: rgba(107, 114, 128, 0.2); border-radius: 3px; padding: 0.1rem 0.4rem; margin-bottom: 0.35rem; letter-spacing: 0.03em; }
+    .corp-finance-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.5rem; }
+    .corp-finance-table th, .corp-finance-table td { border: 1px solid #2a2a30; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; background: #18181c; }
+    .corp-finance-table th { background: #1f1f24; color: #a5b4fc; font-weight: 600; }
+    .corp-finance-table .sector-col { min-width: 12rem; color: #e8e8ed; }
+    .corp-finance-table .badge-high { color: #22c55e; font-weight: 600; }
+    .corp-finance-table .badge-mid { color: #f59e0b; font-weight: 600; }
+    .corp-finance-table .badge-low { color: #ef4444; font-weight: 600; }
+    .corp-finance-table .reason-bullets { margin: 0; padding-left: 1rem; color: #a0a0a8; font-size: 0.75rem; line-height: 1.4; }
+    .corp-finance-table .reason-bullets li { margin-bottom: 0.2rem; }
+    .corp-finance-table tbody tr { height: 4rem; }
+    .corp-finance-table tbody td { vertical-align: middle; padding: 0.6rem 0.75rem; }
+    .corp-finance-filter { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .corp-finance-filter label { font-size: 0.8rem; color: #8b8b96; }
+    .corp-finance-filter select { background: #2a2a30; color: #e8e8ed; border: 1px solid #3a3a42; border-radius: 6px; padding: 0.35rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+    .usecase-bench-callout { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .usecase-bench-block { flex: 1; min-width: 280px; border-radius: 6px; padding: 0.6rem 0.9rem; font-size: 0.8rem; line-height: 1.6; }
+    .usecase-bench-block a { text-decoration: none; }
+    .usecase-bench-block a:hover { text-decoration: underline; }
+    .usecase-bench-block strong { font-weight: 600; }
+    .usecase-bench-card { background: rgba(160, 160, 168, 0.08); border-left: 3px solid #6b7280; }
+    .usecase-bench-card strong { color: #9ca3af; }
+    .usecase-bench-card a { color: #9ca3af; }
+    .usecase-bench-qr { background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22c55e; }
+    .usecase-bench-qr strong { color: #86efac; }
+    .usecase-bench-qr a { color: #4ade80; }
+    .bench-type-badge { display: inline-block; font-size: 0.62rem; font-weight: 700; border-radius: 3px; padding: 0.1rem 0.35rem; margin-right: 0.25rem; vertical-align: middle; letter-spacing: 0.02em; }
+    .bench-badge-card { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+    .bench-badge-qr { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+    .usecase-table-wrap { overflow-x: auto; margin-top: 0.5rem; }
+    .usecase-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .usecase-table th, .usecase-table td { border: 1px solid #2a2a30; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; background: #18181c; }
+    .usecase-table th { background: #1f1f24; color: #a5b4fc; font-weight: 600; }
+    .usecase-table .usecase-bullets { margin: 0; padding-left: 1rem; color: #a0a0a8; font-size: 0.75rem; line-height: 1.5; }
+    .usecase-table .usecase-bullets li { margin-bottom: 0.25rem; }
+    .usecase-table a { color: #818cf8; text-decoration: none; }
+    .usecase-table a:hover { text-decoration: underline; }
+    .kbiz-tooltip-wrap { position: relative; display: inline-block; }
+    .kbiz-tooltip-popup { display: none; position: absolute; z-index: 200; left: 0; top: 100%; margin-top: 8px; width: 480px; padding: 0.75rem; background: #1f1f24; border: 1px solid #3a3a42; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.55); text-align: left; }
+    .kbiz-tooltip-wrap:hover .kbiz-tooltip-popup { display: block; }
+    .kbiz-tooltip-images { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
+    .kbiz-tooltip-images img { flex: 1; min-width: 0; border-radius: 6px; object-fit: cover; }
+    .kbiz-tooltip-bullets { margin: 0.4rem 0 0; padding-left: 1.1rem; font-size: 0.75rem; color: #e8e8ed; line-height: 1.55; }
+    .kbiz-tooltip-bullets li { margin-bottom: 0.3rem; }
+    .howto-step-img { display: block; max-width: 100%; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid #2a2a30; }
+    .segmentation-legend ul { margin: 0; padding-left: 1.25rem; font-size: 0.8rem; color: #e8e8ed; line-height: 1.6; }
+    .segmentation-legend li { margin-bottom: 0.25rem; }
+    .segmentation-legend .pct { color: #a5b4fc; font-weight: 600; }
+    .thailand-map-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .thailand-map-container { width: 360px; height: 420px; position: relative; flex-shrink: 0; }
+    .thailand-map-container svg { width: 100%; height: 100%; }
+    .thailand-map-container path.region-path { cursor: pointer; transition: opacity 0.15s; stroke: #2a2a30; stroke-width: 1; }
+    .thailand-map-container path.region-path:hover { opacity: 0.9; }
+
+    footer { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #2a2a30; font-size: 0.75rem; color: #8b8b96; }
+
+    .whyso-intro { margin-bottom: 1.25rem; font-size: 0.9rem; line-height: 1.5; color: #a0a0a8; }
+    .whyso-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .whyso-table th, .whyso-table td { border: 1px solid #2a2a30; padding: 0.75rem 1rem; text-align: left; vertical-align: top; background: #18181c; }
+    .whyso-table th { background: #1f1f24; color: #a5b4fc; font-weight: 600; min-width: 10rem; }
+    .whyso-table .row-label { min-width: 11rem; color: #8b8b96; font-weight: 500; }
+    .whyso-table .point { color: #e8e8ed; font-weight: 500; margin-bottom: 0.35rem; }
+    .whyso-table .detail { margin: 0; padding-left: 1rem; color: #a0a0a8; font-size: 0.8rem; line-height: 1.45; }
+    .whyso-table .detail li { margin-bottom: 0.2rem; }
+    .whyso-table .flag { font-size: 1.2rem; margin-right: 0.25rem; }
+    .whyso-table tr.section-row td { background: #1a1a20; color: #a5b4fc; font-weight: 600; padding: 0.5rem 1rem; border: 1px solid #2a2a30; }
+    .whyso-sources { margin-top: 1.25rem; padding: 0.9rem 1rem; background: rgba(99, 102, 241, 0.08); border-radius: 8px; border-left: 4px solid #6366f1; font-size: 0.78rem; color: #8b8b96; line-height: 1.5; }
+    .whyso-sources strong { color: #a5b4fc; }
+    .whyso-sources a { color: #818cf8; text-decoration: none; }
+    .whyso-sources a:hover { text-decoration: underline; }
+
+    .howto-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; padding: 0.5rem 0; border-bottom: 1px solid #2a2a30; }
+    .howto-tabs button { background: #18181c; color: #8b8b96; border: 1px solid #2a2a30; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; }
+    .howto-tabs button:hover { color: #e8e8ed; border-color: #3a3a42; }
+    .howto-tabs button.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+    .howto-panel { display: none; padding: 0.5rem 0; }
+    .howto-panel.active { display: block; }
+    .howto-bench-callout { background: rgba(99, 102, 241, 0.12); border-left: 4px solid #6366f1; border-radius: 0 8px 8px 0; padding: 0.9rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; line-height: 1.55; }
+    .howto-bench-callout strong { color: #a5b4fc; }
+    .howto-bench-callout a { color: #818cf8; text-decoration: none; }
+    .howto-bench-callout a:hover { text-decoration: underline; }
+    .howto-bench-callout ul { margin: 0.35rem 0 0 1rem; padding-left: 0.5rem; }
+    .howto-bench-callout li { margin-bottom: 0.35rem; }
+    .howto-layout { margin-top: 1rem; overflow-x: auto; }
+    .howto-compare { width: 100%; border-collapse: collapse; font-size: 0.82rem; table-layout: fixed; }
+    .howto-compare th, .howto-compare td { border: 1px solid #2a2a30; padding: 0.5rem 0.65rem; vertical-align: top; text-align: left; }
+    .howto-compare th { background: #1f1f24; color: #a5b4fc; font-weight: 600; }
+    .howto-compare th.step-col { width: 14rem; border-left: 2px solid #6366f1; }
+    .howto-compare td { background: #18181c; color: #e8e8ed; line-height: 1.45; }
+    .howto-compare td.step-cell { background: #1a1a20; color: #e8e8ed; font-size: 0.85rem; position: relative; padding-left: 1.5rem; border-left: 2px solid #6366f1; }
+    .howto-compare td.step-cell::before { content: ''; position: absolute; left: calc(-0.5rem - 4px); top: 0.5rem; width: 8px; height: 8px; border-radius: 50%; background: #6366f1; box-sizing: border-box; }
+    .howto-compare td.step-cell strong { color: #a5b4fc; font-weight: 600; }
+    .howto-compare td.group-cell { font-size: 0.75rem; font-weight: 600; color: #8b8b96; text-transform: uppercase; letter-spacing: 0.04em; background: #1a1a20; padding-left: 1rem; }
+    .howto-compare tr.merged td { background: #1a1a20; color: #8b8b96; font-style: italic; }
+    .howto-compare tr.merged td.step-cell { border-left: 2px solid #6366f1; }
+    .howto-compare ul { margin: 0; padding-left: 1rem; }
+    .howto-compare li { margin-bottom: 0.15rem; }
+    .howto-qr-ref { margin: 0.5rem 0 0 1rem; font-size: 0.7rem; color: #8b8b96; }
+    .howto-qr-ref a { color: #818cf8; text-decoration: none; }
+    .howto-qr-ref a:hover { text-decoration: underline; }
+    .howto-bench-customers { margin-top: 0.75rem; font-size: 0.82rem; line-height: 1.5; color: #a0a0a8; }
+    .howto-bench-customers strong { color: #a5b4fc; }
+    .howto-bench-customers ul { margin: 0.25rem 0 0 1rem; padding-left: 0.5rem; }
+    .howto-bench-customers li { margin-bottom: 0.2rem; }
+    .howto-cover-label, .howto-cover-list { color: #fef08a; }
+    .howto-cover-list .storehub-ref { color: #fef08a; }
+    .howto-highlight { background: rgba(234, 179, 8, 0.35); color: #fef08a; padding: 0.1em 0.2em; border-radius: 2px; cursor: help; }
+    .howto-tooltip-wrap { position: relative; }
+    .howto-tooltip-popup { display: none; position: absolute; z-index: 100; left: 0; top: 100%; margin-top: 4px; min-width: 280px; max-width: 360px; padding: 0.6rem 0.75rem; font-size: 0.78rem; line-height: 1.45; color: #e8e8ed; background: #1f1f24; border: 1px solid #3a3a42; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); white-space: normal; }
+    .howto-tooltip-wrap:hover .howto-tooltip-popup { display: block; }
+    .howto-tooltip-popup .storehub { color: #fef08a; margin-top: 0.35rem; }
+
+    .appendix-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; padding: 0.5rem 0; border-bottom: 1px solid #2a2a30; }
+    .appendix-tabs button { background: #18181c; color: #8b8b96; border: 1px solid #2a2a30; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; }
+    .appendix-tabs button:hover { color: #e8e8ed; border-color: #3a3a42; }
+    .appendix-tabs button.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+    .appendix-panel { display: none; }
+    .appendix-panel.active { display: block; }
+    .appendix-intro { margin-bottom: 1rem; font-size: 0.85rem; line-height: 1.5; color: #a0a0a8; }
+    .keyplayers-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .keyplayers-table th, .keyplayers-table td { border: 1px solid #2a2a30; padding: 0.75rem 1rem; vertical-align: top; text-align: left; background: #18181c; }
+    .keyplayers-table th { background: #1f1f24; color: #a5b4fc; font-weight: 600; }
+    .keyplayers-table th.role-col { width: 12rem; }
+    .keyplayers-table .player-card { margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #2a2a30; }
+    .keyplayers-table .player-card:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .keyplayers-table .player-name { font-weight: 600; color: #e8e8ed; margin-bottom: 0.25rem; }
+    .keyplayers-table .player-desc { font-size: 0.8rem; color: #a0a0a8; line-height: 1.4; margin-bottom: 0.35rem; }
+    .keyplayers-table .player-link { font-size: 0.78rem; }
+    .keyplayers-table .player-link a { color: #818cf8; text-decoration: none; }
+    .keyplayers-table .player-link a:hover { text-decoration: underline; }
+
+    .currentmarket-charts { display: flex; flex-direction: column; gap: 1.5rem; }
+    .currentmarket-section { background: #18181c; border: 1px solid #2a2a30; border-radius: 8px; padding: 1rem; }
+    .currentmarket-section h4 { margin: 0 0 0.5rem; font-size: 0.95rem; color: #a5b4fc; }
+    .currentmarket-section .chart-desc { margin: 0 0 0.75rem; font-size: 0.75rem; color: #8b8b96; }
+    .currentmarket-combo-wrap { width: 100%; height: 280px; position: relative; }
+    .currentmarket-combo-wrap svg { width: 100%; height: 100%; }
+    .currentmarket-combo-wrap .axis-label { font-size: 9px; fill: #8b8b96; }
+    .currentmarket-combo-wrap .bar-revenue { fill: #6366f1; }
+    .currentmarket-combo-wrap .line-customers { fill: none; stroke: #22c55e; stroke-width: 2; }
+    .currentmarket-combo-wrap .line-point { fill: #22c55e; }
+    .currentmarket-combo-wrap .legend { font-size: 10px; fill: #a0a0a8; }
+
+    .currentmarket-callout-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .currentmarket-callout-cell { flex: 1; min-width: 0; display: flex; justify-content: center; }
+    .currentmarket-bubble { background: rgba(99, 102, 241, 0.15); border: 1px solid #3a3a42; border-radius: 8px; padding: 0.5rem 0.65rem; font-size: 0.72rem; line-height: 1.4; color: #a0a0a8; max-width: 280px; position: relative; }
+    .currentmarket-bubble::before { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #3a3a42; }
+    .currentmarket-bubble strong { color: #a5b4fc; font-size: 0.75rem; }
+
+    .summary-page { max-width: 720px; }
+    .summary-page .summary-section { margin-bottom: 1.75rem; }
+    .summary-page .summary-section h2 { color: #a5b4fc; font-size: 1.1rem; margin: 0 0 0.6rem; padding-bottom: 0.35rem; border-bottom: 1px solid #2a2a30; }
+    .summary-page .summary-section h3 { font-size: 0.95rem; color: #e8e8ed; margin: 1rem 0 0.4rem; font-weight: 600; }
+    .summary-page .summary-section p { margin: 0.4rem 0; font-size: 0.9rem; line-height: 1.55; color: #a0a0a8; }
+    .summary-page .summary-section ul { margin: 0.4rem 0; padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.55; color: #a0a0a8; }
+    .summary-page .summary-section li { margin-bottom: 0.25rem; }
+    .summary-page .summary-sub { margin: 0.35rem 0 0.35rem 1rem; padding-left: 0.75rem; border-left: 3px solid #6366f1; font-size: 0.88rem; line-height: 1.5; color: #a0a0a8; }
+    .summary-page .summary-sub + .summary-sub { margin-top: 0.5rem; }
+    .summary-page .storehub-arrow { color: #fef08a; font-weight: 500; }
+    .summary-page .summary-highlight { color: #fef08a; font-weight: 500; }
+    .summary-grey-box { background: #23232a; border: 1px solid #2a2a30; border-radius: 8px; padding: 0.75rem 1rem; margin: 0.75rem 0; }
+    .summary-page .summary-oneline-wrap { margin: 0.4rem 0; }
+    .summary-page .summary-oneline { white-space: nowrap; font-size: 0.7rem; line-height: 1.5; color: #a0a0a8; }
+    .summary-page .summary-section h2 { font-size: 0.98rem; }
+    .summary-page .summary-section h3 { font-size: 0.82rem; margin: 0.65rem 0 0.35rem; }
+    .summary-page .summary-section p { font-size: 0.78rem; line-height: 1.45; }
+    .summary-page .summary-section ul { font-size: 0.78rem; line-height: 1.45; }
+    .summary-page .summary-sub { font-size: 0.76rem; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Corporate QR - GTM Strategy</h1>
+      </div>
+      <nav class="page-nav" id="page-nav">
+        <button type="button" class="active" data-page="summary">Summary</button>
+        <button type="button" data-page="whereto">Where to</button>
+        <button type="button" data-page="whyso">Why so</button>
+        <button type="button" data-page="howto">How to</button>
+        <button type="button" data-page="appendix">Appendix</button>
+      </nav>
+    </header>
+
+    <div id="page-summary" class="page active summary-page">
+      <section class="summary-section">
+        <h2>Where to</h2>
+        <p>Corporate finance service에 대한 MSME의 높은 수요에도 불구하고, 사용률이 저조한 대표적인 국가는 <span class="summary-highlight">Thailand, Malaysia</span>임</p>
+        <div class="summary-sub">Thailand의 MSME는 179B USD 규모로 GDP의 35%를 차지하나, 법인의 운전자본 중 31%만 은행 계좌를 통해 거래되며 침투율이 낮음</div>
+        <div class="summary-sub">Malaysia의 MSME는 134B USD 규모로 GDP의 39%를 차지하나, 법인 계좌를 통해 결제되는 비율이 마찬가지로 38%밖에 되지 않음</div>
+        <p style="margin-top:0.75rem;">세그먼트별 규모와 직원의 법인 결제가 발생하는 use-case를 고려했을 때 두 국가에서는 각각 아래 세그먼트를 타겟할 수 있음</p>
+        <h3>Thailand</h3>
+        <ul>
+          <li><span class="summary-highlight"><strong>물류</strong> (식자재 도매, 건자재 유통)</span> : 하역/하차 인력비용 결제, 원자재 대금 지불, 배송 중 주유 및 긴급 차량 수리비 처리 등</li>
+          <li><span class="summary-highlight"><strong>서비스</strong> (호텔, F&B 프랜차이즈)</span> : 식재료 결제, 외부 협력업체/프리랜서 용역비 정산</li>
+        </ul>
+        <h3>Malaysia</h3>
+        <ul>
+          <li><span class="summary-highlight"><strong>도소매</strong> (이커머스)</span> : 소모성 자재 구매</li>
+          <li><span class="summary-highlight"><strong>물류</strong> (물류 대행)</span> : 수출입 관세 및 통관 대행, 물류 차량 통행료/주차비 결제 등</li>
+          <li><span class="summary-highlight"><strong>서비스</strong> (광고에이전시, F&B 프랜차이즈)</span> : 식재료 결제, 외부 협력업체/프리랜서 용역비 정산 등</li>
+        </ul>
+      </section>
+      <section class="summary-section">
+        <h2>Why so</h2>
+        <p>두 국가는 공통적으로 1) 은행에서 요구하는 높은 담보 및 서류 요건과 2) 수수료 부담으로 법인카드 발급 및 사용률이 낮음</p>
+        <h3>1)</h3>
+        <ul>
+          <li><strong>복잡한 발행 요건:</strong> 법인 카드 발행 시 <span class="summary-highlight">감사보고서와 은행 거래 내역 등을 증빙</span>해야 하는데, 보고서 체계가 미비한 영세기업은 이로 인해 발급 자체가 낮음</li>
+          <li><strong>까다로운 한도 설정:</strong> <span class="summary-highlight">부동산, 예금 담보를 기반으로 한도</span>를 설정할 수 있어, 담보 자산이 없는 온라인 및 영세기업은 한도 설정에 어려움을 겪음</li>
+        </ul>
+        <h3>2)</h3>
+        <ul>
+          <li><strong>수수료:</strong> 법인카드 결제 수수료는 Thailand 2~4%, Malaysia 0.6%로 법인 QR 결제 0.25~0.5% 대비 높은 <span class="summary-highlight">수수료 부담</span>이 존재함</li>
+          <li><strong>정산 지연:</strong> 또한 신용카드 결제 이후 정산은 일반적으로 <span class="summary-highlight">T+1~3 영업일 소요</span>되어, 법인 비용 관리에 시간적 격차가 존재함</li>
+        </ul>
+      </section>
+      <section class="summary-section">
+        <h2>How to</h2>
+        <p style="margin-top:0.5rem;"><strong>&lt;단계별 진출 전략&gt;</strong></p>
+        <h3>Thailand - "높은 완성도, 높은 장벽" (Low Priority)</h3>
+        <ul>
+          <li>Thailand 정부는 2015년부터 'National e-Payment Master Plan'을 세우고, 모든 은행 계좌를 전화번호나 법인 번호(Tax ID)와 연결하는 PromptPay 인프라를 구축함</li>
+          <li>덕분에 은행들이 이 인프라 위에 법인 전용 관리 기능만 얹으면 바로 '법인 QR 서비스'를 제공할 수 있어, 일찍부터 은행 위주의 법인 QR 서비스가 확대되었음</li>
+          <li><span class="storehub-arrow">⇒ K BIZ(Kasikorn Bank)가 300만 MSME 중 120만을 확보하여 독점적 위치 보유; 신규 진입장벽 존재</span></li>
+          <li>또한 핀테크가 신규 진출 시 E-Money 라이선스가 필요하고, 이때 자본금 요건이 1억 바트(약 38억 원)로 매우 높음</li>
+          <li>그럼에도 불구하고, 1) 해당 은행 계좌에 법인을 등록하고, 모든 직원들도 해당 은행 계좌를 신설해야 하는 까다로운 발급/사용 조건, 2) 사용 후 까다로운 정산 시스템으로 여전히 MSME들의 사용 편의성을 제고할 부분은 존재</li>
+        </ul>
+        <h3>Malaysia - "열린 기회, 유연한 생태계" (High Priority)</h3>
+        <ul>
+          <li>CHIP, Airwallex, Swipey 등 핀테크사가 SME 시장을 혁신 중이나, 아직까지 Thailand만큼 QR 인프라가 단일화되어 있지 않고 침투율도 상대적으로 낮아 <span class="summary-highlight">법인카드/QR이 혼재</span>되어 있는 상황</li>
+          <li>이에 현장 현금결제가 많이 필요한 도소매 유통, F&B 프랜차이즈는 CHIP (QR만 제공), 해외 결제가 많은 테크/에이전시는 Swipey (최근까지 카드만 제공), 다국적 기업 대상 Airwallex (카드만 제공)로 이용층이 분리되어 있음</li>
+          <li>신규 핀테크사가 E-Money 라이선스 확보 시, 자본금 요건이 상대적으로 낮고(약 3억~15억 원), 금융 규제 샌드박스와 BaaS(Banking-as-a-Service) 인프라도 발달하여 우회 진출이 용이한 구조</li>
+          <li>이에, <span class="summary-highlight">법인카드/QR dual track으로 공격적 진출 시, 광범위한 수요층을 확보할 기회</span> 존재</li>
+        </ul>
+        <div class="summary-grey-box">
+          <h3>Step 1: Malaysia 우선 진출</h3>
+          <ul>
+            <li><span class="summary-highlight"><strong>BaaS 기반 화이트라벨 전략:</strong></span> 직접 라이선스를 취득하는 대신, Xendit 등 로컬 라이선스 보유사 API를 활용해 가상 계좌 및 결제망을 확보하여 법적 책임을 최소화하고 출시 속도를 극대화함</li>
+            <li><span class="summary-highlight"><strong>법인카드/QR 동시 제공:</strong></span> DuitNow QR, 온라인·해외 결제는 Visa 카드를 단일 플랫폼에서 제공</li>
+            <li><span class="summary-highlight"><strong>전략적 파트너십:</strong></span> 1.8만 개 가맹점을 보유한 StoreHub(POS) 등 현지 플랫폼과 연동하여, 가맹점주 및 직원들을 위한 '전용 경비 관리 모듈'로 빠르게 점유율 확보</li>
+          </ul>
+        </div>
+        <div class="summary-grey-box">
+          <h3>Step 2: Thailand 시장 틈새 공략</h3>
+          <ul>
+            <li><span class="summary-highlight"><strong>은행 API 연동 SaaS 모델:</strong></span> 결제 라이선스를 따지 않고, 은행의 Open Banking API를 활용하여 지출 내역을 시각화하고 회계 프로그램(FlowAccount 등)에 자동 전송해주는 '순수 SaaS' 툴로 접근</li>
+            <li><span class="summary-highlight"><strong>고도화된 워크플로우:</strong></span> 은행 앱이 제공하지 못하는 '다단계 승인 구조' 및 'AI 영수증 자동 처리' 기능을 내세워 프리미엄 중소기업 수요 공략</li>
+          </ul>
+        </div>
+        <p style="margin-top:0.75rem;"><strong>&lt;User journey 차별화&gt;</strong></p>
+        <h3>1) 결제 승인</h3>
+        <p>Thailand — K BIZ는 모든 결제 건에 사장(Authorizer) 수동 승인이 필요하여 병목 발생</p>
+        <p>Malaysia — Airwallex·Swipey는 사장 사전 승인 없이 한도 내 자유 결제 가능, CHIP은 pre-approval 시 자유 결제 가능하나 QR 전용으로 온라인/해외 결제 불가</p>
+        <p><span class="storehub-arrow">⇒ '사전 승인 워크플로우' + 'MCC Filtering'을 QR·카드 모두에 적용하여 결제 전 사장 승인과 업종 제한을 동시 적용</span></p>
+        <h3>2) 증빙 수집</h3>
+        <p>Thailand — K BIZ E-Slip은 거래 확인용일 뿐 Thailand 국세청(RD) e-Tax Invoice 규격이 아님</p>
+        <p>Malaysia — 세 업체 모두 LHDN e-Invoice 규격 미지원, CHIP은 회계 소프트웨어 연동도 미출시</p>
+        <p><span class="storehub-arrow">⇒ 결제와 동시에 두 국가의 국세청 규격 e-Invoice 실시간 자동 생성 + 회계 소프트웨어 자동 연동</span></p>
+      </section>
+    </div>
+    <div id="page-whereto" class="page">
+      <div class="section-heading" style="color: #fef08a;">Step 1. 국가 선정</div>
+      <div id="exec-summary" class="exec-summary" role="region" aria-label="Executive summary"></div>
+      <nav class="tabs" id="tabs-country">
+      <div class="tabs-row">
+        <span class="tabs-label">Market index:</span>
+        <button type="button" class="active" data-tab="1">1. MSME GDP</button>
+        <button type="button" data-tab="2">2. MSME GDP %</button>
+        <button type="button" data-tab="3">3. MSME contribution</button>
+      </div>
+      <div class="tabs-row">
+        <span class="tabs-label">Finance index:</span>
+        <button type="button" data-tab="6">4. % bank account</button>
+        <button type="button" data-tab="7">5. % bank for working capital</button>
+        <button type="button" data-tab="8">6. % of payment electronically</button>
+      </div>
+    </nav>
+
+    <div id="panel1" class="chart-panel active">
+      <div class="chart-card">
+        <h3>1) MSME GDP (B USD)</h3>
+        <p class="desc">Regional review A-4 MSME Output 2023 (B USD) · GDP 큰 순 · 붉은선: 평균</p>
+        <div class="chart-filter">
+          <select id="filter-chart1">
+            <option value="2023" selected>2023년</option>
+          </select>
+        </div>
+        <div class="chart-wrap" id="chart1"></div>
+      </div>
+    </div>
+
+    <div id="panel2" class="chart-panel">
+      <div class="chart-card">
+        <h3>2) MSME GDP %</h3>
+        <p class="desc">Regional review A-3 MSME Output to GDP % 2023 · 1번과 동일 국가 순서 · 붉은선: 평균</p>
+        <div class="chart-filter">
+          <select id="filter-chart2">
+            <option value="2023" selected>2023년</option>
+          </select>
+        </div>
+        <div class="chart-wrap line-chart-wrap" id="chart2"></div>
+      </div>
+    </div>
+
+    <div id="panel3" class="chart-panel">
+      <div class="chart-card">
+        <h3>3) MSME contribution</h3>
+        <p class="desc">Country review 2. MSME landscape · scale of enterprise( micro / small / medium-sized ) 2023 기업 수 기반 GDP 기여도(생산성 가중치 적용) · Thailand: OSMEP GDP규모별 직접 데이터 · Micro 위, Small 중간, Medium 아래 · 붉은 점선: Medium 기여도 평균</p>
+        <div class="chart-wrap contribution-wrap" id="chart3"></div>
+      </div>
+    </div>
+
+    <div id="panel6" class="chart-panel">
+      <div class="chart-card">
+        <h3>4) % bank account</h3>
+        <p class="desc">20개국 (Market index 1번 MSME GDP 상위 10국 + 벤치마킹 선진국 10국) · World Bank · 붉은선: 평균</p>
+        <div class="chart-filter">
+          <select id="filter-chart6">
+            <option value="2023">2023년</option>
+            <option value="2024" selected>2024년</option>
+          </select>
+        </div>
+        <div class="chart-wrap line-chart-wrap" id="chart6"></div>
+      </div>
+    </div>
+
+    <div id="panel7" class="chart-panel">
+      <div class="chart-card">
+        <h3>5) % bank for working capital</h3>
+        <p class="desc">20개국 (Market index 1번 MSME GDP 상위 10국 + 벤치마킹 선진국 10국) · World Bank · 붉은선: 평균</p>
+        <div class="chart-filter">
+          <select id="filter-chart7">
+            <option value="2023">2023년</option>
+            <option value="2024" selected>2024년</option>
+          </select>
+        </div>
+        <div class="chart-wrap line-chart-wrap" id="chart7"></div>
+      </div>
+    </div>
+
+    <div id="panel8" class="chart-panel">
+      <div class="chart-card">
+        <h3>6) % of payment electronically</h3>
+        <p class="desc">20개국 (Market index 1번 MSME GDP 상위 10국 + 벤치마킹 선진국 10국) · World Bank · 붉은선: 평균</p>
+        <div class="chart-filter">
+          <select id="filter-chart8">
+            <option value="2023">2023년</option>
+            <option value="2024" selected>2024년</option>
+          </select>
+        </div>
+        <div class="chart-wrap line-chart-wrap" id="chart8"></div>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <div class="section-heading" style="color: #fef08a;">Step 2. 선정 국가 내 타겟 세그멘테이션</div>
+      <div id="exec-summary-industry" class="exec-summary" role="region" aria-label="Executive summary (Industry)">
+        <strong>Executive summary</strong><br>(추후 요약 예정)
+      </div>
+      <nav class="tabs" id="tabs-industry">
+        <div class="tabs-row">
+          <span class="tabs-label">Sector breakdown:</span>
+          <button type="button" class="active" data-tab="seg-thailand">Thailand</button>
+          <button type="button" data-tab="seg-malaysia">Malaysia</button>
+        </div>
+        <div class="tabs-row">
+          <span class="tabs-label">Use-case:</span>
+          <button type="button" data-tab="usecase-thailand">Thailand</button>
+          <button type="button" data-tab="usecase-malaysia">Malaysia</button>
+        </div>
+      </nav>
+    </div>
+
+    <div id="panelseg-thailand" class="chart-panel-industry active">
+      <div class="chart-card">
+        <div class="sector-insight-callout">
+          <span class="insight-label">KEY INSIGHT</span><br>
+          <strong>기타 서비스</strong> (숙박·외식, 교육, 전문서비스, ICT 등 40.3% 차지)—80% SME가 개인카드로 사업비 지불, 법인카드·B2B 결제 서비스 미침투<br>
+          <strong>도소매업</strong> (21.1%)—소규모 가맹점·전통시장 중심으로 EDC·법인카드 수용률 저조
+        </div>
+        <h3>By industry sector</h3>
+        <p class="desc">MSME GDP by sector (% share) 2024 · ADB data.adb.org Table 2_THA row 47~</p>
+        <div class="segmentation-pie-wrap">
+          <div class="segmentation-pie-container" id="chart-seg-thailand"></div>
+          <div class="segmentation-legend" id="chart-seg-thailand-legend"></div>
+        </div>
+        <h3 class="seg-subtitle">Corporate Finance penetration by Sector</h3>
+        <p class="desc">GDP concentration: By industry sector 파이 기준 High/Mid/Low · Corporate finance penetration: 업종별 법인카드·법인금융 침투율 (High/Mid/Low)</p>
+        <table class="corp-finance-table" role="grid" aria-label="Thailand Corporate Finance penetration by sector">
+          <thead><tr><th class="sector-col">업종</th><th>GDP 집중도</th><th>법인 금융 침투율</th><th>판단 근거</th></tr></thead>
+          <tbody>
+            <tr><td class="sector-col">기타 서비스</td><td><span class="badge-high">High</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>Thailand SME 80%가 개인카드로 사업비 지불 (Visa/Backbase). F&B·숙박·전문서비스 미침투.</li><li>OSMEP MSME2024: 소규모 사업장 디지털 결제·인프라 격차.</li></ul></td></tr>
+            <tr><td class="sector-col">제조업</td><td><span class="badge-high">High</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>정형화된 섹터; 수출기업은 은행·카드 접근 양호.</li><li>마이크로·소규모 제조업은 비공식 금융 의존.</li></ul></td></tr>
+            <tr><td class="sector-col">도소매업</td><td><span class="badge-high">High</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>소규모 가맹점 EDC·QR 수용 지연; 법인카드 사용 제한적.</li><li>BOT: EDC 90만+대 보급이나 전통 소매 미침투.</li></ul></td></tr>
+            <tr><td class="sector-col">건설업</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>프로젝트 기반 자금조달; 대출 위주, 법인카드 보조.</li></ul></td></tr>
+            <tr><td class="sector-col">기타*</td><td><span class="badge-low">Low</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>광업·전기가스; MSME GDP 비중 작음.</li></ul></td></tr>
+            <tr><td class="sector-col">농림수산업</td><td><span class="badge-low">Low</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>비공식·현금 거래; corporate finance 채택 제한적.</li></ul></td></tr>
+          </tbody>
+        </table>
+        <p class="desc" style="margin-top:0.5rem;"><strong>소스</strong> <a href="https://www.sme.go.th/uploads/file/20240930-133515_MSME2024_EN.pdf" target="_blank" rel="noopener">OSMEP MSME2024</a> · Visa Thailand · Backbase/IDC Thailand SME banking</p>
+        <h3 class="seg-subtitle">By region</h3>
+        <p class="desc">MSME by region (% share) 2024 · ADB Table 2_THA row 21~</p>
+        <div class="thailand-map-wrap">
+          <div class="thailand-map-container" id="chart-thailand-region"></div>
+          <div class="segmentation-legend" id="chart-thailand-region-legend"></div>
+        </div>
+        <p class="desc" style="margin-top:0.5rem;"><strong>데이터 출처</strong> ADB <a href="https://data.adb.org/media/14526/download" target="_blank" rel="noopener">data.adb.org (14526)</a> · Table 2_THA</p>
+      </div>
+    </div>
+
+    <div id="panelseg-malaysia" class="chart-panel-industry">
+      <div class="chart-card">
+        <div class="sector-insight-callout">
+          <span class="insight-label">KEY INSIGHT</span><br>
+          <strong>도소매업</strong> (17%)—다수 소규모 도소매업체, BNM·ICMR 기준 bank lending은 주력이나 법인카드·B2B 결제 활용도 낮음<br>
+          <strong>기타 서비스 활동</strong> (9.3%)—개인사업·수리업·부동산임대 등 informal 성향, corporate finance 미침투
+        </div>
+        <h3>By industry sector</h3>
+        <p class="desc">Table 5 Value Added of MSMEs by Kind of Economic Activity at Current Prices (2024) · DOSM MSMEs Performance 2024 · 전체 MSME GDP 대비 % · 마우스 오버 시 세부 업종명 표시</p>
+        <div class="segmentation-pie-wrap">
+          <div class="segmentation-pie-container" id="chart-seg-malaysia"></div>
+          <div class="segmentation-legend" id="chart-seg-malaysia-legend"></div>
+        </div>
+        <h3 class="seg-subtitle">Corporate Finance penetration by Sector</h3>
+        <p class="desc">GDP concentration: By industry sector 파이 기준 High/Mid/Low · Corporate finance penetration: 업종별 법인카드·법인금융 침투율 (sub-sector 단위)</p>
+        <div class="corp-finance-filter">
+          <label>GDP 집중도:</label>
+          <select id="filter-malaysia-gdp" aria-label="GDP 집중도 필터">
+            <option value="">전체</option>
+            <option value="high">High</option>
+            <option value="mid">Mid</option>
+            <option value="low">Low</option>
+          </select>
+          <label>법인 금융 침투율:</label>
+          <select id="filter-malaysia-pen" aria-label="법인 금융 침투율 필터">
+            <option value="">전체</option>
+            <option value="high">High</option>
+            <option value="mid">Mid</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <table class="corp-finance-table" id="table-malaysia-corp" role="grid" aria-label="Malaysia Corporate Finance penetration by sector">
+          <thead><tr><th class="sector-col">업종 (sub-sector)</th><th>GDP 집중도</th><th>법인 금융 침투율</th><th>판단 근거</th></tr></thead>
+          <tbody>
+            <tr data-gdp="high" data-pen="low"><td class="sector-col">도소매업</td><td><span class="badge-high">High</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>SME Corp/DOSM: 소규모 도소매 다수; bank lending 위주이나 법인카드·B2B 결제 활용 저조.</li><li>ICMR: 64% external finance, 대부분 banking; corporate card 미침투.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="low"><td class="sector-col">기타 서비스 활동</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>ISIC S: 수리업, 개인서비스, 단체활동; informal·소규모居多.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">기타 제조업</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>BNM/SME Bank: 제조업 운영자금·설비자금 대출 다수; 법인카드 보조.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">건설업</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>프로젝트 기반; bank financing 일반, 법인카드 보조.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="low"><td class="sector-col">농림수산업</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>BNM HalalBiz 등 지원 있으나 현금·informal 비중 높음.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">식품</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>Halal·F&B; 일부 정형화 기업은 bank/card 접근 양호.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">운수·창고</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>물류·운송; 연료·차량 관련 corporate card 잠재.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="high"><td class="sector-col">금융·보험</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-high">High</span></td><td><ul class="reason-bullets"><li>금융업; 법인서비스·corporate card 활용 당연히 높음.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">전문·과학·기술 서비스</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>전문서비스; 일부 고수익 기업 corporate finance 양호.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">화학·화학제품</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>제조 하위; BNM scheme·bank lending 활용.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="low"><td class="sector-col">숙박·음식점</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>호텔·외식; 소규모 가맹점 다수, 법인카드 수용률 낮음.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">부동산</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>부동산; 대출 중심, corporate card 보조.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">목재·종이</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>제조; bank financing 일반적.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">금속·금속제품</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>제조 하위; BNM scheme 활용.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">정보통신</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>ICT; startup·scale-up 다수, market-based financing·digital 결제 관심.</li></ul></td></tr>
+            <tr data-gdp="low" data-pen="mid"><td class="sector-col">섬유·의류</td><td><span class="badge-low">Low</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>섬유·의류; 수출기업 일부 양호.</li></ul></td></tr>
+            <tr data-gdp="mid" data-pen="mid"><td class="sector-col">기계·장비</td><td><span class="badge-mid">Mid</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>기계제조; 설비자금·bank lending.</li></ul></td></tr>
+            <tr data-gdp="low" data-pen="mid"><td class="sector-col">음료·담배</td><td><span class="badge-low">Low</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>음료·담배; 규제산업, 정형화 기업 다수.</li></ul></td></tr>
+            <tr data-gdp="low" data-pen="mid"><td class="sector-col">행정·지원 서비스</td><td><span class="badge-low">Low</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>행정지원; 직원·B2B 비용 corporate card 잠재.</li></ul></td></tr>
+            <tr data-gdp="low" data-pen="mid"><td class="sector-col">교육</td><td><span class="badge-low">Low</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>교육; 일부 사립기관 bank/card 활용.</li></ul></td></tr>
+            <tr data-gdp="low" data-pen="mid"><td class="sector-col">보건·복지</td><td><span class="badge-low">Low</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>의료·복지; clinic·요양 시설 bank 연동.</li></ul></td></tr>
+            <tr data-gdp="low" data-pen="low"><td class="sector-col">광업</td><td><span class="badge-low">Low</span></td><td><span class="badge-low">Low</span></td><td><ul class="reason-bullets"><li>광업; MSME 비중 매우 낮음.</li></ul></td></tr>
+            <tr data-gdp="low" data-pen="mid"><td class="sector-col">전기가스·증기</td><td><span class="badge-low">Low</span></td><td><span class="badge-mid">Mid</span></td><td><ul class="reason-bullets"><li>전기가스; 공공·규제; 제한적 MSME.</li></ul></td></tr>
+          </tbody>
+        </table>
+        <p class="desc" style="margin-top:0.5rem;"><strong>소스</strong> <a href="https://www.dosm.gov.my/portal-main/release-content/micro-small--medium-enterprises-msmes-performance-2024" target="_blank" rel="noopener">DOSM MSMEs Performance 2024</a> · <a href="https://www.icmr.my/wp-content/uploads/2024/02/ICMR_SME-Financing-Report_FINAL_23022024.pdf" target="_blank" rel="noopener">ICMR SME Financing Report</a> · SME Corp Malaysia</p>
+        <h3 class="seg-subtitle">By region</h3>
+        <p class="desc">MSMEs by region (% share) 2023 · ADB 2024 Asia SME Monitor - MAL Table 2_MAL row 23~</p>
+        <div class="thailand-map-wrap">
+          <div class="thailand-map-container" id="chart-malaysia-region"></div>
+          <div class="segmentation-legend" id="chart-malaysia-region-legend"></div>
+        </div>
+        <p class="desc" style="margin-top:0.5rem;"><strong>데이터 출처</strong> DOSM, Micro Small &amp; Medium Enterprises (MSMEs) Performance 2024 · <a href="https://www.dosm.gov.my/portal-main/release-content/micro-small--medium-enterprises-msmes-performance-2024" target="_blank" rel="noopener">Table Micro, Small &amp; Medium Enterprise (MSMEs) Performance 2024</a> (Sheet 5: Value Added by Kind of Economic Activity - RM Million)</p>
+      </div>
+    </div>
+
+    <div id="panelusecase-thailand" class="chart-panel-industry">
+      <div class="chart-card">
+        <h3>Thailand Use-case</h3>
+        <p class="desc">세부 업종별 법인카드/QR Use-case 및 벤치마킹 서비스</p>
+        <div class="usecase-table-wrap">
+          <table class="usecase-table" role="grid" aria-label="Thailand Use-case by sector">
+            <thead><tr><th>Sector</th><th>세부 업종 (Sub-segment)</th><th>법인카드/QR Use-case (직원/법인 지출)</th><th>벤치마킹 서비스 (Benchmarking)</th></tr></thead>
+            <tbody>
+              <tr><td>도소매업</td><td>농수산물/식자재 도매 유통</td><td><ul class="usecase-bullets"><li>유통 트럭 기사가 농가/재래시장에서 현장 매입 시 QR 결제</li><li>물류창고 하역 인력의 단기 노무비 즉시 지급</li><li>배송 중 긴급 주유 및 차량 수리비 처리</li></ul></td><td rowspan="5" style="vertical-align:middle; text-align:left;"><span class="bench-type-badge bench-badge-qr">QR</span> <span class="kbiz-tooltip-wrap"><a href="https://www.kasikornbank.com/en/business/sme/Pages/k-biz.aspx" target="_blank" rel="noopener">K BIZ (Kasikorn Bank)</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/kbiz-web.png" alt="K BIZ Web"><img src="img/kbiz-app.png" alt="K BIZ App"></div><ul class="kbiz-tooltip-bullets"><li>SME 맞춤형 'All-in-One' 법인 QR 서비스: 오프라인 매장부터 B2B 거래까지 기업의 모든 자금 흐름을 App에서 관리하고 QR로 결제</li><li>현재 300만 Thailand MSME 중 120만 이용객 확보</li></ul></div></span><br><span class="bench-type-badge bench-badge-qr">QR</span> <span class="kbiz-tooltip-wrap"><a href="https://krungthai.com/en/content/eec/medium-business" target="_blank" rel="noopener">Krungthai Business (Krungthai Bank)</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/ktb-1.png" alt="Krungthai Business 1"><img src="img/ktb-2.png" alt="Krungthai Business 2"><img src="img/ktb-3.png" alt="Krungthai Business 3"></div><ul class="kbiz-tooltip-bullets"><li>SME 대상 법인 QR 서비스: 직원이 App을 통해 지출안을 작성(Maker)하면 사장이 푸시 알람으로 결제를 승인(Authorizer)하는 권한 기반 시스템</li><li>현재 ~9만 기업이 사용 중</li></ul></div></span><br><span class="bench-type-badge bench-badge-qr">QR</span> <span class="kbiz-tooltip-wrap"><a href="https://www.scb.co.th/en/corporate-banking/digital-banking-services/business-anywhere" target="_blank" rel="noopener">SCB Business Anywhere (SCB)</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/scb-biz.png" alt="SCB Business Anywhere" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>SME 대상 스마트폰/워치 기반 QR 서비스: 직원이 QR 결제 요청을 보내면 사장님의 스마트폰/워치로 승인</li><li>약 10만 개 기업 사용</li></ul></div></span></td></tr>
+              <tr><td>도소매업</td><td>건축 자재 및 공구 유통</td><td><ul class="usecase-bullets"><li>현장 납품 시 발생하는 하차 대행 비용 결제</li><li>공급업체에 대한 Cash-on-Delivery(COD) 대금 지불</li><li>영업 사원의 로컬 거래처 응대 및 소액 비품 구매</li></ul></td></tr>
+              <tr><td>기타 서비스</td><td>부티크 호텔 및 게스트하우스</td><td><ul class="usecase-bullets"><li>호텔 주방의 매일 아침 재래시장 장보기 결제</li><li>로컬 세탁/청소 용역업체에 대한 정기/비정기 대금 QR 지불</li><li>투어 가이드 및 외부 프리랜서 활동비 정산</li></ul></td></tr>
+              <tr><td>기타 서비스</td><td>이벤트/케이터링 서비스</td><td><ul class="usecase-bullets"><li>행사 현장 단기 스태프 식비 및 일당 지급</li><li>퀵서비스, 화물 배송료 등 현장 운영비 실시간 결제</li><li>장소 대관 및 소품 대여를 위한 긴급 예약금 지불</li></ul></td></tr>
+              <tr><td>기타 서비스</td><td>로컬 프랜차이즈 가맹본부</td><td><ul class="usecase-bullets"><li>각 지점별 긴급 비품 조달을 위한 현장 결제</li><li>슈퍼바이저의 지점 방문 및 실태 점검 시 활동비 처리</li><li>가맹점 홍보를 위한 로컬 인쇄/제작 용역비 결제</li></ul></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="panelusecase-malaysia" class="chart-panel-industry">
+      <div class="chart-card">
+        <h3>Malaysia Use-case</h3>
+        <p class="desc">세부 업종별 법인카드/QR Use-case 및 벤치마킹 서비스</p>
+        <div class="usecase-table-wrap">
+          <table class="usecase-table" role="grid" aria-label="Malaysia Use-case by sector">
+            <thead><tr><th>Sector</th><th>세부 업종 (Sub-segment)</th><th>법인카드/QR Use-case (직원/법인 지출)</th><th>벤치마킹 서비스 (Benchmarking)</th></tr></thead>
+            <tbody>
+              <tr><td>도소매업</td><td>이커머스 운영 및 물류 대행</td><td><ul class="usecase-bullets"><li>물류 센터 내 소모성 자재(박스, 테이프) 긴급 구매</li><li>물류 차량 통행료(Touch 'n Go 충전) 및 주차비 결제</li><li>수출입 관세 및 통관 대행 소액 수수료 현장 처리</li></ul></td><td><span class="bench-type-badge bench-badge-qr">QR</span> <span class="kbiz-tooltip-wrap"><a href="https://www.chip-in.asia/" target="_blank" rel="noopener">CHIP</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/chip-overview.png" alt="CHIP - Digital Finance Platform" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>SME 대상 Petty Cash 기반 QR 서비스: DuitNow 인프라 기반 QR 결제 플랫폼</li><li>사용 기업 수 미공개 (~수 천 단위 예상)</li></ul></div></span></td></tr>
+              <tr><td>도소매업</td><td>자동차 정비 및 부품 유통</td><td><ul class="usecase-bullets"><li>외부 부품 공급사에 대한 긴급 부품 확보비 지불</li><li>정비소 운영을 위한 로컬 청소/폐기물 처리 용역비 결제</li><li>영업 직원의 차량 시승 및 고객 방문 활동비</li></ul></td><td><span class="bench-type-badge bench-badge-qr">QR</span> <span class="kbiz-tooltip-wrap"><a href="https://www.chip-in.asia/" target="_blank" rel="noopener">CHIP</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/chip-overview.png" alt="CHIP - Digital Finance Platform" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>SME 대상 Petty Cash 기반 QR 서비스: DuitNow 인프라 기반 QR 결제 플랫폼</li><li>사용 기업 수 미공개 (~수 천 단위 예상)</li></ul></div></span></td></tr>
+              <tr><td>기타 서비스</td><td>크리에이티브 에이전시, 마케팅 대행사</td><td><ul class="usecase-bullets"><li>프리랜서 디자이너/카피라이터 외주비 실시간 정산</li><li>광고 시안 제작을 위한 로컬 인쇄소 소액 결제</li><li>소액 디지털 광고(FB, Google) 테스트용 광고비 지출</li></ul></td><td><span class="bench-type-badge bench-badge-card">카드</span> <span class="kbiz-tooltip-wrap"><a href="https://swipey.co/" target="_blank" rel="noopener">Swipey</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/swipey-cards.png" alt="Swipey Corporate Cards" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>Tech 스타트업 타겟 법인 카드/QR 서비스: 직원별 전용 Visa 카드 발급 + '25년 6월 DuitNow 파트너십으로 법인 QR도 제공</li><li>2,000개 이상 기업 사용 중</li></ul></div></span><br><span class="bench-type-badge bench-badge-card">카드</span> <span class="kbiz-tooltip-wrap"><a href="https://www.airwallex.com/my" target="_blank" rel="noopener">Airwallex</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/airwallex-cards.png" alt="Airwallex Corporate Cards" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>Cross-border 기업 타겟 법인카드 발급 서비스: 일일 또는 거래당 지출 한도 기반 Visa 카드 사용</li><li>국가마다 QR 시스템이 다른 특성상, 범용성이 큰 Visa (애플/구글 페이로 가능) 발급</li><li>해외 수수료 0% 및 해외 사용 내역 대시보드 관리 제공</li></ul></div></span></td></tr>
+              <tr><td>기타 서비스</td><td>로컬 카페 및 베이커리 체인</td><td><ul class="usecase-bullets"><li>본사 일괄 구매 외 지점별 신선 재료 긴급 수급</li><li>배달 대행 업체(Grab/FoodPanda 외 로컬) 비용 정산</li><li>매장 시설(전기, 배수) 긴급 수리 기사 방문 시 결제</li></ul></td><td><span class="bench-type-badge bench-badge-qr">QR</span> <span class="kbiz-tooltip-wrap"><a href="https://www.chip-in.asia/" target="_blank" rel="noopener">CHIP</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/chip-overview.png" alt="CHIP - Digital Finance Platform" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>SME 대상 Petty Cash 기반 QR 서비스: DuitNow 인프라 기반 QR 결제 플랫폼</li><li>사용 기업 수 미공개 (~수 천 단위 예상)</li></ul></div></span></td></tr>
+              <tr><td>기타 서비스</td><td>전문 클리닝 및 시설 관리</td><td><ul class="usecase-bullets"><li>현장 투입 인력의 장비 소모품(세제, 도구) 긴급 구매</li><li>원거리 현장 출동 시 직원들의 식대 및 유류비</li><li>소규모 고객사 납품 시 발생하는 배송 용역비</li></ul></td><td><span class="bench-type-badge bench-badge-qr">QR</span> <span class="kbiz-tooltip-wrap"><a href="https://www.chip-in.asia/" target="_blank" rel="noopener">CHIP</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/chip-overview.png" alt="CHIP - Digital Finance Platform" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>SME 대상 Petty Cash 기반 QR 서비스: DuitNow 인프라 기반 QR 결제 플랫폼</li><li>사용 기업 수 미공개 (~수 천 단위 예상)</li></ul></div></span></td></tr>
+              <tr><td>기타 서비스</td><td>테크 스타트업</td><td><ul class="usecase-bullets"><li>AWS, Slack 등 해외 SaaS 구독 시 카드별로 한도를 설정 후 결제</li></ul></td><td><span class="bench-type-badge bench-badge-card">카드</span> <span class="kbiz-tooltip-wrap"><a href="https://swipey.co/" target="_blank" rel="noopener">Swipey</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/swipey-cards.png" alt="Swipey Corporate Cards" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>Tech 스타트업 타겟 법인 카드/QR 서비스: 직원별 전용 Visa 카드 발급 + '25년 6월 DuitNow 파트너십으로 법인 QR도 제공</li><li>2,000개 이상 기업 사용 중</li></ul></div></span></td></tr>
+              <tr><td>기타 서비스</td><td>다국적 전문 서비스업</td><td><ul class="usecase-bullets"><li>컨설턴트나 변호사의 외근 식대 및 유류비를 카드로 결제</li><li>여러 국가에 흩어진 팀원들에게 현지 통화 카드를 배급하고 본사에서 통합 관리</li></ul></td><td><span class="bench-type-badge bench-badge-card">카드</span> <span class="kbiz-tooltip-wrap"><a href="https://www.airwallex.com/my" target="_blank" rel="noopener">Airwallex</a><div class="kbiz-tooltip-popup"><div class="kbiz-tooltip-images"><img src="img/airwallex-cards.png" alt="Airwallex Corporate Cards" style="width:100%"></div><ul class="kbiz-tooltip-bullets"><li>Cross-border 기업 타겟 법인카드 발급 서비스: 일일 또는 거래당 지출 한도 기반 Visa 카드 사용</li><li>국가마다 QR 시스템이 다른 특성상, 범용성이 큰 Visa (애플/구글 페이로 가능) 발급</li><li>해외 수수료 0% 및 해외 사용 내역 대시보드 관리 제공</li></ul></div></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+      <footer>
+        <p><strong>데이터 출처</strong> ADB Asia SME Monitor 2025 · World Bank Enterprise Surveys</p>
+      </footer>
+    </div>
+
+    <div id="page-whyso" class="page">
+      <div class="exec-summary" role="region" aria-label="Executive summary">
+        <strong>Executive summary</strong><br>
+        두 국가는 공통적으로 1) 법인카드 발행 시 요구되는 까다롭고 복잡한 프로세스 (감사보고서 및 은행 거래내역 제출, 담보 기반 한도 설정 등), 2) 높은 수수료 및 느린 정산 속도로 인한 경제성 리스크로 법인카드 사용률이 낮다.
+      </div>
+      <div class="chart-card">
+        <h3>Why so</h3>
+        <p class="desc">국가별 MSME 법인카드 침투율 저하 원인 · x축: Thailand·Malaysia, y축: Banking/Economic Barriers</p>
+        <table class="whyso-table" role="grid" aria-label="국가별 MSME 법인카드 침투율 저하 원인">
+          <thead>
+            <tr>
+              <th class="row-label">항목</th>
+              <th scope="col">Thailand</th>
+              <th scope="col">Malaysia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="section-row">
+              <td colspan="3">A. Bank barrier</td>
+            </tr>
+            <tr>
+              <td class="row-label"><strong>A-1.</strong> 법인카드 발행 시 증빙 요건</td>
+              <td>
+                <div class="point"> 감사·재무 증빙 문턱으로 영세 SME 발급 제한</div>
+                <ul class="detail">
+                  <li>법인카드·신용 한도 신청 시 감사보고서·재무제표 등 공식 증빙을 요구하는 은행이 많음.</li>
+                  <li>보고서 체계가 미비한 소규모·미세기업은 발급 자체가 어렵거나 한도가 매우 낮게 책정됨.</li>
+                </ul>
+              </td>
+              <td>
+                <div class="point"> 2~3개년 감사보고서(Audited Financials) 요구로 발급 문턱 상승</div>
+                <ul class="detail">
+                  <li>감사 면제 대상 소규모 법인(PD10-2024 기준)은 보고서가 없어 발급을 못하는 사례 다수.</li>
+                  <li>Data 인프라·금융 교육 부족이 시장 기반 금융 접근을 더욱 제한함.</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="row-label"><strong>A-2.</strong> 법인카드 한도 설정</td>
+              <td>
+                <div class="point"> 부동산·예금 담보 중심 한도로 영세 SME 발급 불가 다수</div>
+                <ul class="detail">
+                  <li>한도 설정 시 기업의 미래 가치보다 현재 부동산·예금 담보를 중시하는 관행이 있음.</li>
+                  <li>ttb sme smart biz·카시콘 상업대출 등도 부동산·기계·예금 담보 기반 한도가 일반적.</li>
+                  <li>담보가 없는 영세 SME는 법인카드 발급·한도 승인 자체가 어려운 경우가 많음.</li>
+                </ul>
+              </td>
+              <td>
+                <div class="point"> 담보·재무 증빙 기반 한도로 성장 자본 접근 제한</div>
+                <ul class="detail">
+                  <li>법인카드·신용 한도 설정 시 2~3개년 Audited Financials 요구 등 높은 증빙 문턱이 일반적.</li>
+                  <li>성장 자본(growth capital) 수요에 대한 “missing middle” 현상이 지적됨.</li>
+                  <li>담보·공식 재무 데이터 기반 한도 설정으로, 데이터가 부족한 SME는 한도·발급이 제한됨.</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="row-label"><strong>A-3.</strong> 물리적 접근성</td>
+              <td>
+                <div class="point"> 도시 중심 지점 배치로 농촌·소도시 접근 제한</div>
+                <ul class="detail">
+                  <li>법인카드는 오프라인 발급·서류 제출이 많은데, 지점이 도시 중심이라 접근이 제한되는 지역 존재.</li>
+                </ul>
+              </td>
+              <td>
+                <div class="point"> 지점·오프라인 발급 의존으로 접근성 격차 존재</div>
+                <ul class="detail">
+                  <li>법인카드 발급·한도 변경 등에 지점 방문·실물 서류 제출이 필요해, 지리적·시간적 부담이 있음.</li>
+                </ul>
+              </td>
+            </tr>
+            <tr class="section-row">
+              <td colspan="3">B. Economic barrier</td>
+            </tr>
+            <tr>
+              <td class="row-label"><strong>B-1.</strong> 수수료</td>
+              <td>
+                <div class="point"> 신용카드 MDR 2.5~4% vs PromptPay 0.8~1.5%·무료</div>
+                <ul class="detail">
+                  <li>신용카드: MDR 약 2.5~4%(카드사·게이트웨이 포함).</li>
+                  <li>PromptPay QR: 소상공인 게이트웨이 수수료 0.8~1.5% 수준, 2018년 이후 다수 은행이 디지털 결제 수수료 면제.</li>
+                  <li>소비자 PromptPay 5,000바트 이하는 무료, 그 이상도 2~10바트 수준으로 극소액.</li>
+                </ul>
+              </td>
+              <td>
+                <div class="point"> 신용카드 MDR(인터체인지 상한 0.60% 등) vs DuitNow QR 0.25~0.5%</div>
+                <ul class="detail">
+                  <li>신용카드: 인터체인지 상한 0.60%(BNM), 실제 MDR은 여기에 가맹점 수수료 등이 더해져 더 높음.</li>
+                  <li>DuitNow QR: 직불 0.25% MDR, 신용 0.5% MDR(2023년 10월부터 부과). 미소·소규모 사업자 상당수 면제.</li>
+                  <li>소비자 DuitNow 이체·QR 사용 무료.</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="row-label"><strong>B-2.</strong> 정산 속도</td>
+              <td>
+                <div class="point"> 신용카드 T+1~T+3 vs PromptPay 실시간(수 초)</div>
+                <ul class="detail">
+                  <li>신용카드 매입: 정산 일반적으로 T+1~T+3 영업일(가맹점·어큐어러 계약에 따라 2~3일·7일 등).</li>
+                  <li>PromptPay: 실시간 정산, 결제 후 수 초 내 계좌 입금. 당일 자금 회전 가능.</li>
+                  <li>MSME의 현금 흐름 선호와 괴리로 법인카드 수취 동기 감소.</li>
+                </ul>
+              </td>
+              <td>
+                <div class="point"> 신용카드 T+1~T+3 vs DuitNow 실시간(즉시)</div>
+                <ul class="detail">
+                  <li>신용카드 매입: T+1~T+3 영업일 정산이 일반적. 배치 처리·영업일 기준으로 지연 발생.</li>
+                  <li>DuitNow: 즉시 이체·실시간 정산, 24/7. 수 초 내 입금 완료.</li>
+                  <li>MSME가 매출 즉시 회전을 선호해 카드 정산 주기 괴리가 수취 기피 요인으로 작용.</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="whyso-sources">
+          <strong>리서치 소스</strong>
+          <ul style="margin: 0.35rem 0 0 1rem; padding-left: 0.5rem;">
+            <li>ADB, <em>Asia SME Monitor 2025</em>, <a href="https://www.adb.org/sites/default/files/publication/1096981/asia-sme-monitor-2025.pdf" target="_blank" rel="noopener">https://www.adb.org/sites/default/files/publication/1096981/asia-sme-monitor-2025.pdf</a> (정량 데이터·ASEAN SME 금융 접근)</li>
+            <li>ERIA / ASEAN, <em>SME Policy Index: ASEAN 2024 – Enabling Sustainable Growth and Digitalisation</em>, <a href="https://www.eria.org/uploads/ASPI_2024-Full_report-upload-25Sep.pdf" target="_blank" rel="noopener">eria.org</a>, <a href="https://asean.org/wp-content/uploads/2024/09/Full-Report_ASEAN-SME-Policy-Index-2024_20-Sept-2024.pdf" target="_blank" rel="noopener">asean.org</a> (ASEAN SME 금융·디지털화 정책)</li>
+            <li>Malaysia: SSM PD10-2024 Audit Exemption, MAICSA, ICMR <em>SME Financing Report</em>; PayNet·The Edge “DuitNow QR MDR”, BNM interchange fee</li>
+            <li>Thailand: TTB SME Smart Biz·Corporate Card, Kasikornbank Commercial Loan, Business Collateral Act; PaymentsCMI “Payment method transaction fees across Southeast Asia”, DuitNow cross-border; BOT PromptPay, paymentproviders.io·antom “PromptPay in Thailand” (MDR 2.5~4% vs 0.8~1.5%)</li>
+            <li>B-1 수수료: PaymentsCMI <a href="https://paymentscmi.com/insights/payment-method-transaction-fees-across-southeast-asia/" target="_blank" rel="noopener">Comparing Payment Method Transaction Fees Across Southeast Asia</a>; Vulcan Post·PayNet “DuitNow QR MDR” (0.25%/0.5%); BSP InstaPay/PESONet 수수료 동결; Curlec “Merchant Discount Rates Malaysia”</li>
+            <li>B-2 정산: Chargebacks911·Bank of America “Transaction Settlement”; Stripe “Payment settlement”; DuitNow·PromptPay·InstaPay 실시간 정산; BSP PESONet 3MBS(1일 3회)</li>
+            <li>ASEAN RTP: Nextrade “Southeast Asia Real-Time Payments”, GFTN/ADB real-time payments·financial access, AMRO cross-border payments</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-howto" class="page">
+      <div class="chart-card">
+        <h3>How to</h3>
+        <p class="desc">국가별 전략 · 탭을 선택하면 해당 국가 내용을 볼 수 있습니다.</p>
+        <nav class="howto-tabs" id="howto-tabs" role="tablist">
+          <button type="button" class="active" data-howto-country="thailand" role="tab" aria-selected="true">Thailand</button>
+          <button type="button" data-howto-country="malaysia" role="tab" aria-selected="false">Malaysia</button>
+        </nav>
+        <div id="howto-panel-thailand" class="howto-panel active" role="tabpanel">
+          <div class="howto-bench-callout">
+            <strong>벤치마킹 QR 업체</strong>
+            <ul>
+              <li><strong>K BIZ (Kasikorn Bank)</strong> : Thailand SME 대상 All-in-One 법인 디지털 뱅킹. PromptPay QR·이체·대량결제·급여·수표 관리, Maker/Authorizer 권한 체계 (<a href="https://www.kasikornbank.com/en/kbiz/pages/index.aspx" target="_blank" rel="noopener">website</a>)</li>
+            </ul>
+            <div class="howto-bench-customers">
+              <strong>K BIZ 주요 고객:</strong>
+              <ul>
+                <li>Thailand 300만 MSME 중 약 120만 기업 사용</li>
+                <li>SME·법인·프랜차이즈: Maker/Authorizer 권한 기반 자금 이체·결제·승인 관리</li>
+                <li>12개 통화, 57개국 해외 송금 지원 · 500명 규모 급여 일괄 처리</li>
+              </ul>
+              <strong class="howto-cover-label">StoreHub 커버 가능 고객:</strong>
+              <ul class="howto-cover-list">
+                <li>K BIZ가 커버 못하는 가맹점 업종 제한(MCC Filtering) · 건당 금액 제한 기능 필요 기업</li>
+                <li>결제와 동시에 e-Tax Invoice 자동 생성이 필요한 세무 증빙 체계가 있는 기업</li>
+              </ul>
+            </div>
+          </div>
+          <div class="howto-layout">
+            <table class="howto-compare" role="grid" aria-label="User journey: 법인카드 vs K BIZ">
+              <thead><tr><th class="step-col">User journey</th><th>법인카드</th><th>K BIZ (Kasikorn Bank)</th></tr></thead>
+              <tbody>
+                <tr><td class="group-cell" colspan="3">Admin onboarding</td></tr>
+                <tr><td class="step-cell"><strong>Step 1.</strong> 발급 신청</td><td><ul><li>오프라인 은행 지점 직접 방문. 최소 2~3년의 Audited Financial Statements(감사보고서), 사업자 등록증, 이사회 결의서 제출</li></ul></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">K BIZ 온라인/앱 가입. 사업자등록증(Certificate of Registration), 법인 설립 서류, 대표자 신분증 제출. 연회비 없음.</span><span class="howto-tooltip-popup" role="tooltip">단, KBank 법인 계좌 개설이 선행되어야 하며, 주주 25% 이상 보유자 서류도 필요. 오프라인 방문이 필요한 경우도 있음.<br><span class="storehub">⇒ StoreHub: 사업자번호만으로 온라인 즉시 가입. 기존 은행 계좌 불필요, 별도 서류 없이 즉시 개시</span></span></span></li></ul><img src="img/kbiz-eligibility.png" class="howto-step-img" alt="K BIZ Eligibility"><p class="howto-qr-ref">참고: <a href="https://www.kasikornbank.com/en/kbiz/pages/index.aspx" target="_blank" rel="noopener">K BIZ</a>, <a href="https://www.kasikornbank.com/en/business/sme/financial-services/account/pages/current.aspx" target="_blank" rel="noopener">KBank 법인계좌 안내</a></p></td></tr>
+                <tr><td class="step-cell"><strong>Step 2.</strong> 한도 설정</td><td><ul><li>은행이 재무제표를 심사하여 부여한 신용 한도 내에서만 가능.</li></ul></td><td><ul><li>예금 기반 한도: 타행 이체 1일 최대 10M Baht, 자행 이체 30M Baht. 관리자가 직원별·용도별 권한(Maker/Authorizer) 할당</li></ul></td></tr>
+                <tr><td class="step-cell"><strong>Step 3.</strong> 심사 및 승인</td><td><ul><li>신용 리스크 평가로 인해 최소 2주~4주 소요. 영세 MSME는 여기서 90% 이상 거절됨.</li></ul></td><td><ul><li>예금 기반이므로 별도 신용 심사 없음. 법인 계좌 개설 후 K BIZ 서비스 즉시 활성화.</li></ul></td></tr>
+                <tr><td class="step-cell"><strong>Step 4.</strong> 배포 및 등록</td><td><ul><li>실물 카드를 우편 수령 후 직원이 ARS나 앱으로 개별 등록. 분실 시 재발급에 또 1~2주 소요.</li></ul></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">직원별 K BIZ 앱 설치 후 역할 부여(Maker: 거래 생성, Authorizer: 승인, Viewer: 조회). Administrator가 권한 관리</span><span class="howto-tooltip-popup" role="tooltip">단, K BIZ는 KBank 법인 계좌 전용 서비스로, 모든 직원이 KBank 앱을 설치해야 하며, 타행 계좌 사용 직원은 이용 불가. 직원 수가 많을수록 개별 등록·권한 설정에 시간 소요.<br><span class="storehub">⇒ StoreHub: 은행 무관하게 QR 코드 하나로 즉시 배포. 직원은 별도 앱 설치 없이 카카오톡/LINE 등 기존 메신저로 결제 링크 수신·사용 가능</span></span></span></li></ul><img src="img/kbiz-roles.png" class="howto-step-img" alt="K BIZ Roles - Viewer, Maker, Authorizer, Administrator"><p class="howto-qr-ref">참고: <a href="https://play.google.com/store/apps/details?id=com.kasikornbank.kbiz" target="_blank" rel="noopener">K BIZ App (Google Play)</a></p></td></tr>
+                <tr><td class="group-cell" colspan="3">Employee Expense</td></tr>
+                <tr class="merged"><td class="step-cell"><strong>Step 5.</strong> 지출 발생</td><td colspan="2">식대, 비품 구매, 교통비 등 현장 지출 발생. (공통)</td></tr>
+                <tr><td class="step-cell"><strong>Step 6.</strong> 결제 수단 선택</td><td><ul><li>법인카드로 현장 결제. 법인카드가 없는 직원은 개인 카드나 현금을 먼저 사용.</li></ul></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">직원(Maker)이 K BIZ 앱에서 PromptPay QR 결제 또는 이체 요청을 생성하면, 사장(Authorizer)에게 푸시 알림이 전송되어 승인 후 법인 계좌에서 즉시 결제</span><span class="howto-tooltip-popup" role="tooltip">단, 모든 결제 건에 사장(Authorizer)의 수동 승인이 필요하여 결제마다 지연 발생. 사장 부재 시 결제 자체가 불가능한 병목이 존재하며, 가맹점 업종·건당 금액 기반 사전 제한 규칙을 설정할 수 없음.<br><span class="storehub">⇒ StoreHub: '가맹점 업종 제한(MCC Filtering)' 및 '건당 금액 제한'을 사전 설정하면, 규칙 범위 내 결제는 사장 승인 없이 자동 처리. 범위 초과 시에만 사장에게 승인 요청</span></span></span></li></ul><p class="howto-qr-ref">참고: <a href="https://www.kasikornbank.com/special/promptpay/pages/indexen.aspx" target="_blank" rel="noopener">KBank PromptPay</a></p></td></tr>
+                <tr><td class="step-cell"><strong>Step 7.</strong> 증빙 수집</td><td><ul><li>법인카드 결제 종이 영수증을 챙겨서 사진을 찍거나 풀칠해서 보관</li></ul></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">K BIZ에서 결제 즉시 E-Slip 자동 생성. 최대 12개월 거래 내역 PDF/Excel 조회·다운로드 가능</span><span class="howto-tooltip-popup" role="tooltip">단, E-Slip은 거래 확인용일 뿐 Thailand 국세청(RD) e-Tax Invoice 규격이 아니므로, 세무 증빙 시 별도로 영수증을 변환·정리해야 함.<br><span class="storehub">⇒ StoreHub: 결제와 동시에 Thailand 국세청(RD) 규격에 맞는 e-Tax Invoice를 실시간 자동 생성</span></span></span></li></ul></td></tr>
+                <tr><td class="group-cell" colspan="3">Back-office</td></tr>
+                <tr><td class="step-cell"><strong>Step 8.</strong> 비용 청구</td><td><ul><li>월말에 엑셀 파일에 영수증 사진을 첨부하여 재무 담당자에게 이메일/수기 제출</li></ul></td><td><ul><li>절차 축소. K BIZ 대시보드에 모든 거래 실시간 기록. 관리자(Authorizer/Viewer)가 즉시 조회·공유 가능</li></ul></td></tr>
+                <tr><td class="step-cell"><strong>Step 9.</strong> 승인 대기</td><td><ul><li>관리자가 영수증과 지출 내역을 일일이 대조. 부정 사용이나 증빙 누락 확인에 수일 소요.</li></ul></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">Maker→Authorizer 실시간 승인 워크플로우. 거래 건별 푸시 알림·SMS·이메일 통지로 즉시 확인</span><span class="howto-tooltip-popup" role="tooltip">단, 한도·업종별 자동 승인 규칙이 없어 소액 결제(커피, 주차비 등)도 매 건 사장이 수동 승인해야 함. 하루 수십 건 이상 발생 시 Authorizer에게 알림 피로(notification fatigue) 발생.<br><span class="storehub">⇒ StoreHub: 정책 기반 자동 승인 엔진 — 설정한 금액·업종 범위 내 결제는 자동 승인 처리, 범위 초과분만 사장에게 승인 알림 전송</span></span></span></li></ul><img src="img/kbiz-account.png" class="howto-step-img" alt="K BIZ Account Dashboard"></td></tr>
+                <tr><td class="step-cell"><strong>Step 10.</strong> 정산</td><td><ul><li>다음 달 급여일에 직원의 개인 계좌로 환급. 직원은 한 달간 자금 압박.</li></ul></td><td><ul><li>법인 예금 계좌에서 실시간 차감·지급 완료. 직원 개인 자금 선지출 불필요. KBank 내 이체·빌페이먼트 무료(프로모션)</li></ul><img src="img/kbiz-approval.png" class="howto-step-img" alt="K BIZ Transaction Approval List"></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="howto-panel-malaysia" class="howto-panel" role="tabpanel">
+          <div class="howto-bench-callout">
+            <strong>벤치마킹 업체</strong>
+            <ul>
+              <li><strong>Airwallex</strong> (법인카드) : Cross-border 멀티통화 Visa 법인카드. 해외 수수료 0%, 실시간 지출 대시보드, Apple/Google Pay 지원. BNM 규제 (<a href="https://www.airwallex.com/my/spend-management/cards" target="_blank" rel="noopener">website</a>)</li>
+              <li><strong>Swipey</strong> (법인카드) : Malaysia SME 전용 선불 Visa 법인카드. 가상/실물 카드, 직원별 한도 설정, DuitNow QR 연동. BNM 규제 (<a href="https://swipey.co/cards/" target="_blank" rel="noopener">website</a>)</li>
+              <li><strong>CHIP</strong> (법인QR) : DuitNow 기반 Petty Cash QR 결제 플랫폼. 직원 지출 관리·예산 할당·실시간 모니터링. BNM 규제 (<a href="https://www.chip-in.asia/control/expense" target="_blank" rel="noopener">website</a>)</li>
+            </ul>
+            <div class="howto-bench-customers">
+              <strong>주요 고객:</strong>
+              <ul>
+                <li><strong>Airwallex</strong> — 다국적 이커머스·SaaS·스타트업(McLaren Racing, SleekFlow, World of Neopets 등 200,000+ 기업)</li>
+                <li><strong>Swipey</strong> — Malaysia SME·에이전시·스타트업(INVOKE, SpeedHome, FoundingBird 등 2,000+ 기업)</li>
+                <li><strong>CHIP</strong> — Malaysia 소상공인·리테일·F&B(Bateriku.com, PTT Outdoor, Beard Brothers BBQ 등 수 천 기업)</li>
+              </ul>
+              <strong class="howto-cover-label">StoreHub 커버 가능 고객:</strong>
+              <ul class="howto-cover-list">
+                <li>제조·물류·B2B 도매 등 세 업체의 가맹점 네트워크 밖 업종</li>
+                <li>LHDN e-Invoice 연동이 필수인 세무 증빙 체계가 있는 중대형 기업</li>
+                <li>가맹점 업종 제한(MCC Filtering) 기반 사전 통제가 필요한 기업</li>
+              </ul>
+            </div>
+          </div>
+          <div class="howto-layout">
+            <table class="howto-compare" role="grid" aria-label="User journey: Airwallex vs Swipey vs CHIP">
+              <thead><tr><th class="step-col">User journey</th><th>Airwallex</th><th>Swipey</th><th>CHIP</th></tr></thead>
+              <tbody>
+                <tr><td class="group-cell" colspan="4">Admin onboarding</td></tr>
+                <tr><td class="step-cell"><strong>Step 1.</strong> 발급 신청</td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">온라인 가입. SSM 등록 법인 대상, 사업자 서류·이사 신분증 제출. 승인 후 가상 Visa 카드 즉시 생성, 무료</span><span class="howto-tooltip-popup" role="tooltip">단, Malaysia 법인(SSM 등록)만 가입 가능하며, 개인사업자·프리랜서는 이용 불가. KYB 심사에 수 영업일 소요될 수 있음.<br><span class="storehub">⇒ StoreHub: 사업자번호만으로 온라인 즉시 가입. 개인사업자·프리랜서도 이용 가능, 별도 서류 없이 즉시 개시</span></span></span></li></ul></td><td><ul><li>온라인 가입 5~7분. 사업자 서류 제출·검증. Freemium 2장 가상 카드 무료, 유료 플랜에서 물리 카드·한도 확대</li></ul></td><td><ul><li>온라인 가입. 법인 사업자 서류 제출 후 DuitNow QR 기반 결제 플랫폼 활성화</li></ul></td></tr>
+                <tr><td class="step-cell"><strong>Step 2.</strong> 한도 설정</td><td><ul><li>멀티통화 지갑 잔액 기반. 카드별 일간·주간·월간·분기별 한도 설정. 거래당 한도도 별도 지정 가능</li></ul></td><td><ul><li>카드별·용도별 한도 설정. 대시보드·앱에서 직원·부서별 할당</li></ul></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">팀·직원별 예산(Budget) 사전 할당. 미사용 잔액 실시간 회수(Claw-back) 가능</span><span class="howto-tooltip-popup" role="tooltip">단, CHIP은 DuitNow QR 전용이라 QR 결제를 수용하지 않는 온라인 쇼핑몰·해외 SaaS 결제에는 사용 불가.<br><span class="storehub">⇒ StoreHub: QR + 카드 + 온라인 결제를 단일 플랫폼에서 지원, 결제 수단 제약 없음</span></span></span></li></ul><img src="img/chip-step2.png" alt="CHIP 한도 설정" class="howto-step-img"></td></tr>
+                <tr><td class="step-cell"><strong>Step 3.</strong> 심사 및 승인</td><td><ul><li>KYB(사업자 검증) 후 별도 신용 심사 없음. 지갑 충전(Prepaid) 기반 즉시 활성화</li></ul></td><td><ul><li>별도 신용 심사 없음. 선불(Prepaid) 기반이므로 즉시 승인</li></ul></td><td><ul><li>별도 신용 심사 없음. 예치금 기반이므로 즉시 활성화</li></ul></td></tr>
+                <tr><td class="step-cell"><strong>Step 4.</strong> 배포 및 등록</td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">가상 카드 즉시 발급. Company Card(팀 공용) / Employee Card(개인용) 구분. Apple Pay·Google Pay 연동</span><span class="howto-tooltip-popup" role="tooltip">단, Malaysia에서는 물리 카드(Physical Card)를 아직 지원하지 않아 오프라인 현장 결제 시 반드시 모바일 결제(Apple/Google Pay) 가능 단말이 필요.<br><span class="storehub">⇒ StoreHub: QR 코드 하나로 오프라인 결제 즉시 가능. 모바일 단말·NFC 인프라 불필요</span></span></span></li></ul><img src="img/airwallex-step4.png" alt="Airwallex 배포 및 등록" class="howto-step-img"></td><td><ul><li>가상 카드 즉시 발급·앱 배포. 물리 카드는 유료 플랜에서 발급. 직원에게 카드 할당·권한 부여</li></ul><img src="img/swipey-step4.png" alt="Swipey 배포 및 등록" class="howto-step-img"></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">직원에게 CHIP 앱 설치 후 QR 결제 권한 부여. 각 직원별 예산 할당·동결·회수 가능</span><span class="howto-tooltip-popup" role="tooltip">단, QR 결제만 지원하므로 해외 온라인 결제(AWS, Slack, Google Ads 등)에는 사용 불가. 직원 출장 시 해외 가맹점 결제도 불가능.<br><span class="storehub">⇒ StoreHub: QR + 가상카드를 동시 제공하여 오프라인 QR과 온라인/해외 결제를 단일 플랫폼에서 커버</span></span></span></li></ul></td></tr>
+                <tr><td class="group-cell" colspan="4">Employee Expense</td></tr>
+                <tr class="merged"><td class="step-cell"><strong>Step 5.</strong> 지출 발생</td><td colspan="3">식대, 비품 구매, 교통비, SaaS 구독 등 현장·온라인 지출 발생. (공통)</td></tr>
+                <tr><td class="step-cell"><strong>Step 6.</strong> 결제 수단 선택</td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">직원이 Airwallex Visa 카드(가상)로 온라인·오프라인(Apple/Google Pay) 결제. 사장 사전 승인 없이 한도 내 즉시 결제 → 사후 모니터링만 가능</span><span class="howto-tooltip-popup" role="tooltip">결제 시점에 사장의 승인이 필요 없어 직원이 한도 내에서 자유롭게 지출. MCC(가맹점 업종) 기반 사전 제한도 미지원하여 어디서 결제하는지 사후에만 확인 가능.<br><span class="storehub">⇒ StoreHub: '사전 승인 워크플로우' — 일정 금액 이상 결제 시 사장 모바일 알림으로 사전 승인 요청. 동시에 MCC Filtering으로 허용 업종 외 결제 자체를 차단</span></span></span></li></ul></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">직원이 Swipey Visa 카드 또는 DuitNow QR로 결제. 사장 사전 승인 없이 할당된 예치금 내 자유 결제 → 사후 모니터링만 가능</span><span class="howto-tooltip-popup" role="tooltip">카드별 한도는 설정 가능하지만, 결제 시점에 사장의 승인 절차가 없어 직원이 한도 내에서 자유롭게 사용. MCC 기반 사전 제한도 미지원.<br><span class="storehub">⇒ StoreHub: '사전 승인 워크플로우' + MCC Filtering을 결합하여 결제 전 사장 승인과 업종 제한을 동시 적용</span></span></span></li></ul></td><td><ul><li>직원이 CHIP 앱에서 DuitNow QR 스캔으로 결제. 두 가지 모드 지원: ① 사전 할당 예산 내 자유 결제, ② 직원이 결제 요청 → 사장 모바일 알림으로 즉시 승인/거절 후 결제 실행(Pre-approval)</li></ul><img src="img/chip-step6.png" alt="CHIP 결제 수단 선택" class="howto-step-img"></td></tr>
+                <tr><td class="step-cell"><strong>Step 7.</strong> 증빙 수집</td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">결제 즉시 대시보드에 거래 내역 자동 기록. Xero·QuickBooks·NetSuite 회계 소프트웨어 연동 지원</span><span class="howto-tooltip-popup" role="tooltip">단, 거래 기록은 내부 회계 연동용일 뿐 Malaysia 국세청(LHDN) e-Invoice 규격이 아니므로, 세무 증빙 시 별도로 영수증을 변환·정리해야 함.<br><span class="storehub">⇒ StoreHub: 결제와 동시에 LHDN 규격에 맞는 e-Invoice를 실시간 자동 생성</span></span></span></li></ul><img src="img/airwallex-step7.png" alt="Airwallex 증빙 수집" class="howto-step-img"></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">결제 즉시 Swipey 앱·대시보드에 E-receipt 자동 생성. 영수증 사진 첨부·메모 기능. 회계 소프트웨어 연동</span><span class="howto-tooltip-popup" role="tooltip">단, E-receipt은 내부 관리용이며 LHDN e-Invoice 규격이 아니므로, 세무 증빙 시 별도 영수증 변환 필요.<br><span class="storehub">⇒ StoreHub: 결제와 동시에 LHDN 규격에 맞는 e-Invoice를 실시간 자동 생성</span></span></span></li></ul></td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">결제 즉시 CHIP 앱에 거래 기록·영수증 자동 저장. 7년간 보관. 회계 소프트웨어 연동 개발 중(Coming Soon)</span><span class="howto-tooltip-popup" role="tooltip">단, 회계 소프트웨어 연동이 아직 미출시(Coming Soon)이며, LHDN e-Invoice 규격도 미지원. 세무 증빙 시 수동 변환 필수.<br><span class="storehub">⇒ StoreHub: 결제와 동시에 LHDN 규격 e-Invoice 실시간 생성 + 회계 소프트웨어 자동 연동</span></span></span></li></ul><img src="img/chip-step7.png" alt="CHIP 증빙 수집" class="howto-step-img"></td></tr>
+                <tr><td class="group-cell" colspan="4">Back-office</td></tr>
+                <tr><td class="step-cell"><strong>Step 8.</strong> 비용 청구</td><td><ul><li>절차 축소. Expense Management에서 직원이 영수증 첨부 후 승인 요청, 관리자가 대시보드에서 일괄 검토</li></ul></td><td><ul><li>절차 축소. 결제 데이터가 Swipey 대시보드에 실시간 기록, 관리자 공유·회계 연동. 정산 5배 단축</li></ul></td><td><ul><li>절차 축소. 거래가 CHIP 대시보드에 실시간 기록. 관리자가 즉시 조회·승인</li></ul></td></tr>
+                <tr><td class="step-cell"><strong>Step 9.</strong> 승인 대기</td><td><ul><li><span class="howto-tooltip-wrap"><span class="howto-highlight">카드별 한도 내 자동 승인. 커스텀 승인 워크플로우 설정 가능. 카드 즉시 동결·해제·삭제</span><span class="howto-tooltip-popup" role="tooltip">단, 한도 기반 자동 승인만 가능하고 업종·가맹점 기반 자동 승인 규칙은 없어, 사후 검토에 의존해야 함.<br><span class="storehub">⇒ StoreHub: 정책 기반 자동 승인 엔진 — 금액·업종·가맹점 범위 내 결제는 자동 승인, 범위 초과분만 사장에게 알림</span></span></span></li></ul></td><td><ul><li>사전 설정 한도·카테고리 내 지출 자동 승인 또는 실시간 모니터링</li></ul></td><td><ul><li>Expense Approval Workflow: 관리자가 거래 건별 승인·거절. 중복 청구 자동 감지(Fraud Protection)</li></ul></td></tr>
+                <tr><td class="step-cell"><strong>Step 10.</strong> 정산</td><td><ul><li>멀티통화 지갑에서 실시간 차감 완료. 직원 선지출·환급 불필요. 해외 거래 수수료 0%</li></ul></td><td><ul><li>회사 예치금에서 실시간 지불 완료. 직원 자금 압박 없음</li></ul></td><td><ul><li>회사 예치금에서 DuitNow 실시간 차감·정산 완료. 직원 자금 압박 없음</li></ul></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-appendix" class="page">
+      <nav class="appendix-tabs" id="appendix-tabs">
+        <button type="button" class="active" data-appendix-tab="keyplayers">Key players</button>
+        <button type="button" data-appendix-tab="currentmarket">Current market</button>
+        <button type="button" data-appendix-tab="license">License</button>
+      </nav>
+      <div id="appendix-panel-keyplayers" class="appendix-panel active">
+        <p class="appendix-intro">국가별 × 역할별 주요 업체 (인프라: 결제 rail·금융결제원 유사 / SaaS/App: 고객에게 법인카드·QR 서비스를 직접 제공, 카카오페이·토스 유사). 규모·법인 고객 타겟 기준 각 2~3개씩 정리.</p>
+        <table class="keyplayers-table" role="grid" aria-label="Key players by country and role">
+          <thead>
+            <tr><th class="role-col">역할</th><th>Thailand</th><th>Malaysia</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>인프라</th>
+              <td>
+                <div class="player-card">
+                  <div class="player-name">PromptPay (BOT)</div>
+                  <div class="player-desc">Thailand 중앙은행(BOT)이 운영하는 국민 즉시송금·QR 인프라. 주민등록번호·휴대폰번호·계좌 연동, 법인 송·수금·세금 환급 지원.</div>
+                  <div class="player-link"><a href="https://www.bot.or.th/en/financial-innovation/digital-finance/digital-payment/promptpay.html" target="_blank" rel="noopener">website</a></div>
+                </div>
+                <div class="player-card">
+                  <div class="player-name">BAHTNET</div>
+                  <div class="player-desc">BOT 산하 대액 실시간 결제(RTGS) 네트워크. 금융기관 간 고액 결제·정산의 기반.</div>
+                  <div class="player-link"><a href="https://www.bot.or.th/en/financial-innovation/digital-finance/digital-payment.html" target="_blank" rel="noopener">website</a></div>
+                </div>
+              </td>
+              <td>
+                <div class="player-card">
+                  <div class="player-name">DuitNow (PayNet)</div>
+                  <div class="player-desc">Malaysia 국민 QR·즉시이체 표준. BNM 감독 하 PayNet이 운영, 은행·이월렛 간 상호운용, 기업 대금 결제 지원.</div>
+                  <div class="player-link"><a href="https://www.duitnow.my/" target="_blank" rel="noopener">website</a></div>
+                </div>
+                <div class="player-card">
+                  <div class="player-name">PayNet</div>
+                  <div class="player-desc">Malaysia 전국 결제망 운영. DuitNow QR·RPP(실시간 결제) 등 인프라 제공.</div>
+                  <div class="player-link"><a href="https://paynet.my/" target="_blank" rel="noopener">website</a></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>SaaS/App</th>
+              <td>
+                <div class="player-card">
+                  <div class="player-name">K-BIZ (Kasikorn Bank)</div>
+                  <div class="player-desc">Thailand #1 SME 디지털 뱅킹. PromptPay QR·이체·대량결제·급여·수표 관리, Maker/Authorizer 권한 체계. 1.2M MSME 사용.</div>
+                  <div class="player-link"><a href="https://www.kasikornbank.com/en/kbiz/pages/index.aspx" target="_blank" rel="noopener">website</a></div>
+                </div>
+                <div class="player-card">
+                  <div class="player-name">Krungthai Business (Krungthai Bank)</div>
+                  <div class="player-desc">Thailand 2위 공공·SME 디지털 뱅킹. PromptPay·급여·세금납부·다통화 이체, Krungthai NEXT 17M 사용자 기반.</div>
+                  <div class="player-link"><a href="https://krungthai.com/en/content/eec/medium-business" target="_blank" rel="noopener">website</a></div>
+                </div>
+                <div class="player-card">
+                  <div class="player-name">SCB Business Anywhere (SCB)</div>
+                  <div class="player-desc">SCB 법인 디지털 뱅킹. 캐시플로우 시각화·다통화 이체·급여·PromptPay, AI-First 전략으로 디지털 수익 15% 성장.</div>
+                  <div class="player-link"><a href="https://www.scb.co.th/en/corporate-banking/digital-banking-services/scb-business-anywhere.html" target="_blank" rel="noopener">website</a></div>
+                </div>
+              </td>
+              <td>
+                <div class="player-card">
+                  <div class="player-name">CHIP</div>
+                  <div class="player-desc">Malaysia MSME 디지털 금융 플랫폼. DuitNow QR 기반 Petty Cash·경비관리·결제수납·컴플라이언스 통합.</div>
+                  <div class="player-link"><a href="https://www.chip-in.asia/" target="_blank" rel="noopener">website</a></div>
+                </div>
+                <div class="player-card">
+                  <div class="player-name">Swipey</div>
+                  <div class="player-desc">SME·법인용 기업 카드·비용 관리. 가상/실물 Visa 카드 발급·한도·승인·정산 자동화, 2,000+ 기업 사용.</div>
+                  <div class="player-link"><a href="https://swipey.co/" target="_blank" rel="noopener">website</a></div>
+                </div>
+                <div class="player-card">
+                  <div class="player-name">Airwallex</div>
+                  <div class="player-desc">글로벌 핀테크. 다통화 Visa 법인카드·해외송금·FX·결제 게이트웨이, 150K+ 기업 고객. APAC 매출 83% YoY 성장.</div>
+                  <div class="player-link"><a href="https://www.airwallex.com/my" target="_blank" rel="noopener">website</a></div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="appendix-panel-currentmarket" class="appendix-panel">
+        <p class="appendix-intro">2024년 기준 업체별 매출액·고객 수. 막대=매출(M USD, 좌축), 라인=고객 수(M people, 우축). 현지 통화는 2024년 평균 환율(THB 35.26, MYR 4.6, PHP 57.3/USD)로 환산.</p>
+        <div class="currentmarket-charts">
+          <div class="currentmarket-section">
+            <h4>인프라 — 매출(연간 거래 규모, M USD) + 고객 수(M people)</h4>
+            <p class="chart-desc">Thailand: PromptPay, BAHTNET / Malaysia: DuitNow, PayNet. 인프라는 매출 대신 연간 거래 규모를 M USD로 환산. 고객=등록·가맹점·참가 기관 수(백만 단위).</p>
+            <div class="currentmarket-callout-row">
+              <div class="currentmarket-callout-cell"></div>
+              <div class="currentmarket-callout-cell">
+                <div class="currentmarket-bubble"><strong>DuitNow가 PayNet에 비해 작은 이유</strong><br>DuitNow는 PayNet이 운영하는 여러 결제 상품 중 하나(QR·실시간 이체). PayNet은 DuitNow Transfer·RPP·FPX·JomPAY 등 전 결제망을 운영해 연간 5.4T RM 규모인 반면, DuitNow QR은 2024년 31.1B RM·가맹점 2.6M에 그쳐 상대적으로 소규모.</div>
+              </div>
+              <div class="currentmarket-callout-cell"></div>
+            </div>
+            <div class="currentmarket-combo-wrap" id="appendix-combo-infra"></div>
+          </div>
+          <div class="currentmarket-section">
+            <h4>SaaS/App — 매출(M USD) + 고객 수(M people)</h4>
+            <p class="chart-desc">Thailand: K-BIZ (Kasikorn Bank), Krungthai Business, SCB Business Anywhere / Malaysia: CHIP, Swipey, Airwallex. Thailand 은행 앱은 SME 디지털 뱅킹 수수료 수입 추정치, Airwallex는 Malaysia 매출 추정치.</p>
+            <div class="currentmarket-callout-row">
+              <div class="currentmarket-callout-cell">
+                <div class="currentmarket-bubble"><strong>Thailand 은행 앱이 Malaysia 핀테크 대비 큰 이유</strong><br>K-BIZ·Krungthai Business·SCB Business Anywhere는 Thailand 3대 은행의 SME 디지털 뱅킹 플랫폼으로, 각각 수십만~120만 법인 고객을 보유. 은행 인프라 위에 구축되어 결제·급여·이체 수수료를 모두 흡수.</div>
+              </div>
+              <div class="currentmarket-callout-cell">
+                <div class="currentmarket-bubble"><strong>Malaysia 핀테크가 소규모인 이유</strong><br>CHIP·Swipey는 초기 스타트업으로 각각 수천 기업 고객 수준. Airwallex는 글로벌 $600M ARR이나 Malaysia 현지 매출은 일부에 불과. 법인 QR/카드 시장이 아직 초기 성장 단계.</div>
+              </div>
+              <div class="currentmarket-callout-cell"></div>
+            </div>
+            <div class="currentmarket-combo-wrap" id="appendix-combo-saas"></div>
+          </div>
+        </div>
+      </div>
+      <div id="appendix-panel-license" class="appendix-panel">
+        <p class="appendix-intro">Thailand·Malaysia에서 법인카드/QR SaaS 서비스 제공 시 필요한 라이선스 유형별 요건 비교. 직접 라이선스 취득 경로와 우회 진출 경로(BaaS/SaaS) 포함.</p>
+        <h4 style="color:#a5b4fc; margin:1rem 0 0.5rem;">직접 라이선스 취득 경로</h4>
+        <table class="keyplayers-table" role="grid" aria-label="License requirements comparison">
+          <thead>
+            <tr><th class="role-col">항목</th><th>Thailand</th><th>Malaysia</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>규제기관</th>
+              <td>Bank of Thailand (BOT) / Ministry of Finance</td>
+              <td>Bank Negara Malaysia (BNM)</td>
+            </tr>
+            <tr>
+              <th>근거법</th>
+              <td>Payment Systems Act B.E. 2560 (2017)</td>
+              <td>Financial Services Act 2013 (FSA)</td>
+            </tr>
+            <tr>
+              <th>E-Money 발행<br>(QR 결제)</th>
+              <td><strong>100M THB (~38억 원)</strong><br>Designated Payment Service License 필요</td>
+              <td><strong>RM 5M (~15억 원)</strong> — 대규모<br><strong>RM 100K (~3천만 원)</strong> — 소규모<br>E-Money Issuer Approval 필요</td>
+            </tr>
+            <tr>
+              <th>카드 발행<br>(법인카드)</th>
+              <td><strong>100M THB (~38억 원)</strong><br>Credit/Debit Card 서비스 라이선스</td>
+              <td>BNM Payment Cards Framework (2022) 준수<br>비은행 EMI의 경우 별도 자본금 요건</td>
+            </tr>
+            <tr>
+              <th>Merchant Acquiring</th>
+              <td><strong>50M THB (~19억 원)</strong></td>
+              <td><strong>RM 300K~1M (~1~3.5억 원)</strong><br>월 거래액 RM 10M 기준 차등 적용</td>
+            </tr>
+            <tr>
+              <th>Payment Facilitating</th>
+              <td><strong>10M THB (~3.8억 원)</strong></td>
+              <td>별도 라이선스 불필요 (EMI 승인 내 포함)</td>
+            </tr>
+            <tr>
+              <th>자본 유지</th>
+              <td>납입자본의 <strong>75% 이상</strong> 유지 의무<br>복수 서비스 신청 시 최고 자본금 기준 적용</td>
+              <td>BNM 정책 문서 기준 최소 자본금 유지<br>Eligible EMI(50만+ 사용자) 시 강화된 기준 적용</td>
+            </tr>
+            <tr>
+              <th>외국인 지분</th>
+              <td>49% 초과 시 <strong>Foreign Business License (FBL)</strong> 별도 취득 필요<br>BOI 승인 시 100% 외국인 소유 가능 + 법인세 감면</td>
+              <td>비은행 EMI의 경우 <strong>외국인 지분 제한 없음</strong></td>
+            </tr>
+            <tr>
+              <th>이사/법인 요건</th>
+              <td>Thai-registered limited company<br>최소 1명 Thai 국적 이사 (태국 거주)<br>파산·사기·자금세탁 전과 결격 사유</td>
+              <td>Malaysia 법인 설립<br>BNM 적격성 심사 (이사 적합성 평가)<br>AML·사이버보안 체계 구비</td>
+            </tr>
+            <tr>
+              <th>예상 소요기간</th>
+              <td>약 <strong>6~12개월</strong> (BOT 심사 → MOF 승인)</td>
+              <td>약 <strong>3~6개월</strong> (Standard EMI)<br>Green Lane 활용 시 단축 가능</td>
+            </tr>
+          </tbody>
+        </table>
+        <h4 style="color:#a5b4fc; margin:1.5rem 0 0.5rem;">우회 진출 경로 (라이선스 불필요 또는 간소화)</h4>
+        <table class="keyplayers-table" role="grid" aria-label="Alternative entry routes">
+          <thead>
+            <tr><th class="role-col">경로</th><th>Thailand</th><th>Malaysia</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>BaaS /<br>화이트라벨</th>
+              <td>은행 Open Banking API 연동<br>결제 라이선스 불필요, SaaS 모델로 접근<br>(예: PromptPay API 위에 부가 서비스 제공)</td>
+              <td>Xendit 등 로컬 라이선스 보유사 API 활용<br>가상 계좌·결제망 확보, 법적 책임 최소화<br><strong>자체 라이선스 없이 출시 가능</strong></td>
+            </tr>
+            <tr>
+              <th>규제 샌드박스</th>
+              <td>BOT Regulatory Sandbox<br>제한된 규모·기간 내 실제 환경 테스트 가능</td>
+              <td>BNM Fintech Regulatory Sandbox (2024년 2월 개정)<br><strong>Green Lane (Fast-Track)</strong>: 금융기관 협업 시 가속 승인<br>누적 110건+ 신청 실적</td>
+            </tr>
+            <tr>
+              <th>순수 SaaS<br>(결제 미처리)</th>
+              <td>경비관리·회계 연동·AI 영수증 처리 등<br>결제를 직접 처리하지 않으면 <strong>결제 라이선스 불필요</strong><br>일반 사업자 등록만으로 운영 가능</td>
+              <td>경비관리·회계 연동·승인 워크플로우 등<br>결제를 직접 처리하지 않으면 <strong>결제 라이선스 불필요</strong><br>일반 사업자 등록만으로 운영 가능</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="margin-top:1rem; font-size:0.72rem; color:#8b8b96; line-height:1.6;">
+          출처:<br>
+          · Thailand — BOT, <em>Payment Systems Act B.E. 2560</em> (<a href="https://www.bot.or.th/en/our-roles/payment-systems/payment-act-oversight.html" target="_blank" rel="noopener" style="color:#6366f1;">bot.or.th</a>);
+          FOSR Law, <em>Payment Processing Licenses in Thailand: Updated 2025 Overview</em> (<a href="https://fosrlaw.com/2025/payment-processing-licenses-in-thailand-updated-2025-overview/" target="_blank" rel="noopener" style="color:#6366f1;">fosrlaw.com</a>);
+          Bangkok Global Law, <em>Requirements for E-payment License Application</em> (<a href="https://www.bgloballaw.com/2024/06/16/requirements-for-e-payment-license-application/" target="_blank" rel="noopener" style="color:#6366f1;">bgloballaw.com</a>);
+          LexNova Partners, <em>Fintech Companies in Thailand: BOI Promotions in 2025</em> (<a href="https://lexnovapartners.com/fintech-companies-in-thailand-boi-promotions/" target="_blank" rel="noopener" style="color:#6366f1;">lexnovapartners.com</a>)<br>
+          · Malaysia — BNM, <em>Policy Document on Electronic Money</em> (2025.01.31 시행) (<a href="https://www.bnm.gov.my/" target="_blank" rel="noopener" style="color:#6366f1;">bnm.gov.my</a>);
+          Rahmat Lim &amp; Partners, <em>New BNM Policy Document updates e-money regulatory framework</em> (<a href="https://www.rahmatlim.com/publication/articles/23493/new-bank-negara-policy-document-updates-e-money-regulatory-framework" target="_blank" rel="noopener" style="color:#6366f1;">rahmatlim.com</a>);
+          Fintechnews MY, <em>Does The Revised 2025 E-Money Policy by BNM Affect You?</em> (<a href="https://fintechnews.my/47925/digital-banking-news-malaysia/bnm-e-money-policy-impact-issuers-consumers/" target="_blank" rel="noopener" style="color:#6366f1;">fintechnews.my</a>);
+          Skrine, <em>BNM issues new Fintech Sandbox Framework</em> (<a href="https://skrine.com/insights/alerts/march-2024/bank-negara-issues-new-fintech-sandbox-framework" target="_blank" rel="noopener" style="color:#6366f1;">skrine.com</a>);
+          Mondaq, <em>Minimum Capital Funds Requirement For Merchant Acquiring Services</em> (<a href="http://www.mondaq.com/financial-services/1113272/minimum-capital-funds-requirement-for-merchant-acquiring-services" target="_blank" rel="noopener" style="color:#6366f1;">mondaq.com</a>)
+        </p>
+      </div>
+    </div>
+  </div>
+  <div id="sector-tooltip" class="sector-tooltip" aria-hidden="true"></div>
+
+  <script>
+(function() {
+  // ADB Asia SME Monitor 2025 · A-4 MSME Output 2023 ($ million → B USD), A-3 MSME Output to GDP % 2023 · Country review 2. MSME landscape scale of enterprise 2023 (’23 없으면 Contribution 제외)
+  // 1. MSME GDP: A-4에 2023 데이터 있는 12국, GDP 큰 순
+  var MSME_RAW = [
+    { name: 'Singapore', msme_gdp_b: 216.791, msme_gdp_pct: 43.2, hasScale: false },
+    { name: 'Thailand', msme_gdp_b: 179.273, msme_gdp_pct: 34.7, hasScale: true, microPct: 7.4, smallPct: 41.4, mediumPct: 51.3 },
+    { name: 'Malaysia', msme_gdp_b: 134.443, msme_gdp_pct: 39.1, hasScale: true, micro: 767421, small: 314465, medium: 19839 },
+    { name: 'Kazakhstan', msme_gdp_b: 96.893, msme_gdp_pct: 36.5, hasScale: true, micro: 0, small: 1999259, medium: 2940 },
+    { name: 'Uzbekistan', msme_gdp_b: 53.007, msme_gdp_pct: 54.3, hasScale: false },
+    { name: 'Bangladesh', msme_gdp_b: 34.696, msme_gdp_pct: 8.3, hasScale: true, micro: 7539942, small: 42932, medium: 11260 },
+    { name: 'Azerbaijan', msme_gdp_b: 11.816, msme_gdp_pct: 18.0, hasScale: true, micro: 389133, small: 8610, medium: 3406 },
+    { name: 'Tajikistan', msme_gdp_b: 8.483, msme_gdp_pct: 61.7, hasScale: true, micro: 0, small: 27689, medium: 5138 },
+    { name: 'Georgia', msme_gdp_b: 7.638, msme_gdp_pct: 53.9, hasScale: true, micro: 0, small: 160013, medium: 2197 },
+    { name: 'Armenia', msme_gdp_b: 7.374, msme_gdp_pct: 31.6, hasScale: true, micro: 103773, small: 4841, medium: 817 },
+    { name: 'Pakistan', msme_gdp_b: 6.144, msme_gdp_pct: 2.2, hasScale: false },
+    { name: 'Kyrgyz Republic', msme_gdp_b: 5.929, msme_gdp_pct: 39.6, hasScale: true, micro: 0, small: 19245, medium: 928 }
+  ];
+  var MSME_DATA = MSME_RAW.slice();
+
+  // MSME GDP 상위 20%: Micro=1, Small=4, Medium=7 / 하위 80%: Micro=1, Small=3, Medium=5 (동일 규칙 적용)
+  function getContributionWeights(idx, totalContrib) {
+    var n = totalContrib;
+    var isTop20 = idx < n * 0.2;
+    if (isTop20) return { micro: 1.0, small: 4.0, medium: 7.0 };
+    return { micro: 1.0, small: 3.0, medium: 5.0 };
+  }
+  function computeContribution(d, idx, totalContrib) {
+    if (!d.hasScale) return null;
+    // GDP 비중 직접 제공 (Thailand: OSMEP/มูลนิธิ สวค. GDP MSME 보고서 2566)
+    if (d.microPct != null && d.smallPct != null && d.mediumPct != null) {
+      return { microPct: d.microPct, smallPct: d.smallPct, mediumPct: d.mediumPct };
+    }
+    if (d.micro == null && d.small == null && d.medium == null) return null;
+    var w = getContributionWeights(idx, totalContrib);
+    var mi = (d.micro || 0) * w.micro, sm = (d.small || 0) * w.small, me = (d.medium || 0) * w.medium;
+    var wi = mi + sm + me;
+    if (wi <= 0) return { microPct: 33.3, smallPct: 33.3, mediumPct: 33.3 };
+    return {
+      microPct: 100 * mi / wi,
+      smallPct: 100 * sm / wi,
+      mediumPct: 100 * me / wi
+    };
+  }
+  var CONTRIB_DATA = MSME_DATA.filter(function(d) { return d.hasScale; });
+  for (var i = 0; i < MSME_DATA.length; i++) {
+    MSME_DATA[i].msme_gdp_b = { 2023: MSME_DATA[i].msme_gdp_b };
+    MSME_DATA[i].msme_gdp_pct = { 2023: MSME_DATA[i].msme_gdp_pct };
+    var contribIdx = CONTRIB_DATA.indexOf(MSME_DATA[i]);
+    if (contribIdx >= 0) {
+      MSME_DATA[i].contribution = computeContribution(MSME_DATA[i], contribIdx, CONTRIB_DATA.length);
+    } else {
+      MSME_DATA[i].contribution = null;
+    }
+  }
+
+  // Finance index 20국: Market index 1번 MSME GDP 상위 10국 + 벤치마킹 선진 국가 10국 (Taiwan, South Korea, Japan, China, UAE, Saudi Arabia, UK, Germany, France, USA)
+  var TOP10_NAMES = MSME_DATA.slice(0, 10).map(function(d) { return d.name; });
+  var BENCHMARK_10 = ['Taiwan', 'South Korea', 'Japan', 'China', 'UAE', 'Saudi Arabia', 'UK', 'Germany', 'France', 'USA']; // 벤치마킹 선진 국가
+  function rand(min, max, seed) {
+    var x = Math.sin((seed || 0) * 12.9898) * 43758.5453;
+    x = x - Math.floor(x);
+    return min + (max - min) * x;
+  }
+  var FINANCE_20 = [];
+  TOP10_NAMES.forEach(function(name, i) {
+    var d = MSME_DATA[i];
+    FINANCE_20.push({
+      name: name,
+      isBenchmark: false,
+      checking_pct: { 2023: Math.round(rand(62, 92, i)), 2024: Math.round(rand(65, 94, i + 20)) },
+      bank_wc_pct: { 2023: Math.round(rand(10, 38, i + 1)), 2024: Math.round(rand(12, 40, i + 21)) },
+      electronic_pct: { 2023: Math.round(rand(28, 72, i + 2)), 2024: Math.round(rand(32, 76, i + 22)) }
+    });
+  });
+  BENCHMARK_10.forEach(function(name, i) {
+    FINANCE_20.push({
+      name: name,
+      isBenchmark: true,
+      checking_pct: { 2023: Math.round(rand(88, 99, i + 10)), 2024: Math.round(rand(90, 99, i + 30)) },
+      bank_wc_pct: { 2023: Math.round(rand(35, 65, i + 11)), 2024: Math.round(rand(38, 68, i + 31)) },
+      electronic_pct: { 2023: Math.round(rand(65, 95, i + 12)), 2024: Math.round(rand(70, 96, i + 32)) }
+    });
+  });
+
+  function avgVal(arr, getVal) {
+    var s = 0, c = 0;
+    for (var i = 0; i < arr.length; i++) { var v = getVal(arr[i]); if (v != null && !isNaN(v)) { s += v; c++; } }
+    return c ? s / c : 0;
+  }
+
+  function updateExecSummary() {
+    var yearGdp = 2023;
+    var yearFinance = 2024;
+    var avgGdp = avgVal(MSME_DATA, function(d) { return d.msme_gdp_b[yearGdp]; });
+    var avgChk = avgVal(FINANCE_20, function(d) { return d.checking_pct[yearFinance]; });
+    var avgBwc = avgVal(FINANCE_20, function(d) { return d.bank_wc_pct[yearFinance]; });
+    var avgElec = avgVal(FINANCE_20, function(d) { return d.electronic_pct[yearFinance]; });
+    var nameToFinance = {};
+    for (var i = 0; i < FINANCE_20.length; i++) nameToFinance[FINANCE_20[i].name] = FINANCE_20[i];
+    var list = [];
+    for (var i = 0; i < MSME_DATA.length; i++) {
+      var d = MSME_DATA[i];
+      if (d.name === 'Kazakhstan') continue;
+      var fin = nameToFinance[d.name];
+      if (!fin) continue;
+      if (d.msme_gdp_b[yearGdp] <= avgGdp) continue;
+      if (fin.checking_pct[yearFinance] > avgChk || fin.bank_wc_pct[yearFinance] > avgBwc || fin.electronic_pct[yearFinance] > avgElec) continue;
+      list.push({ name: d.name, gdp: d.msme_gdp_b[yearGdp] });
+    }
+    list.sort(function(a, b) { return b.gdp - a.gdp; });
+    var names = list.map(function(x) { return x.name; });
+    var el = document.getElementById('exec-summary');
+    if (!el) return;
+    el.innerHTML = '<strong>Executive summary</strong><br>아시아 개도국 지역 내 MSME의 경제 규모는 크지만, Corporate finance service는 평균 대비 열악한 국가는 Thailand, Malaysia ';
+  }
+
+  var BAR_AREA_HEIGHT = 320;
+  var BAR_WRAP_PADDING_BOTTOM = 32;
+
+  function renderChart1(year) {
+    year = +year;
+    var vals = MSME_DATA.map(function(d) { return d.msme_gdp_b[year]; });
+    var max = Math.max.apply(null, vals);
+    var av = avgVal(MSME_DATA, function(d) { return d.msme_gdp_b[year]; });
+    if (max <= 0) max = 1;
+    var avgBarHeightPx = (av / max) * BAR_AREA_HEIGHT;
+    var lineBottomPx = BAR_WRAP_PADDING_BOTTOM + avgBarHeightPx;
+    var html = '<div class="vertical-bar-wrap" style="position:relative">';
+    html += '<div class="vertical-bar-avg" style="bottom:' + lineBottomPx + 'px;left:0;right:0"></div>';
+    for (var i = 0; i < MSME_DATA.length; i++) {
+      var v = MSME_DATA[i].msme_gdp_b[year];
+      var pct = (v / max) * 100;
+      var barClass = v >= av ? 'above-avg' : 'below-avg';
+      html += '<div class="vertical-bar-cell" title="' + MSME_DATA[i].name + ': ' + v + ' B USD">';
+      html += '<div class="vertical-bar-value">' + v + '</div>';
+      html += '<div class="vertical-bar ' + barClass + '" style="height:' + pct + '%"></div>';
+      html += '<div class="vertical-bar-label">' + MSME_DATA[i].name + '</div></div>';
+    }
+    html += '</div>';
+    document.getElementById('chart1').innerHTML = html;
+  }
+
+  function renderLineChart(containerId, dataArr, getVal, year, yMin, yMax) {
+    year = +year;
+    var vals = dataArr.map(function(d) { return getVal(d, year); });
+    var av = avgVal(dataArr, function(d) { return getVal(d, year); });
+    var min = yMin != null ? yMin : Math.min.apply(null, vals);
+    var max = yMax != null ? yMax : Math.max.apply(null, vals);
+    if (max === min) max = min + 1;
+    var n = dataArr.length;
+    var w = 1200, h = 360, pad = { left: 44, right: 28, top: 20, bottom: 52 };
+    var x0 = pad.left, x1 = w - pad.right, y0 = pad.top, y1 = h - pad.bottom;
+    var scaleX = function(i) { return x0 + (i / (n - 1 || 1)) * (x1 - x0); };
+    var scaleY = function(v) { return y1 - (v - min) / (max - min) * (y1 - y0); };
+    var avgY = scaleY(av);
+    var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet"><g>';
+    svg += '<line class="avg-line" x1="' + x0 + '" y1="' + avgY + '" x2="' + x1 + '" y2="' + avgY + '"/>';
+    svg += '<polyline class="country-line" points="';
+    for (var i = 0; i < vals.length; i++) svg += scaleX(i) + ',' + scaleY(vals[i]) + ' ';
+    svg += '" />';
+    for (var i = 0; i < dataArr.length; i++) {
+      var x = scaleX(i), y = scaleY(vals[i]);
+      var vStr = typeof vals[i] === 'number' && (vals[i] % 1 !== 0 || vals[i] > 99) ? vals[i].toFixed(1) : vals[i];
+      svg += '<text class="line-point-value" x="' + x + '" y="' + (y - 5) + '" title="' + dataArr[i].name + ': ' + vStr + '">' + vStr + '</text>';
+    }
+    for (var i = 0; i < dataArr.length; i++) {
+      var x = scaleX(i);
+      var label = dataArr[i].name + (dataArr[i].isBenchmark ? ' (벤치마킹 선진국)' : '');
+      svg += '<text x="' + x + '" y="' + (h - 6) + '" fill="#8b8b96" font-size="9" text-anchor="end" transform="rotate(-55 ' + x + ' ' + (h - 6) + ')">' + dataArr[i].name + '</text>';
+    }
+    svg += '<text x="' + (x1 - 4) + '" y="' + (avgY + 3) + '" fill="#dc2626" font-size="9" text-anchor="end">avg ' + (typeof av === 'number' && (av % 1 !== 0 || av > 99) ? av.toFixed(1) : av) + '</text>';
+    var step = (max - min) / 4;
+    for (var g = 0; g <= 4; g++) { var vy = min + step * g; svg += '<text x="4" y="' + (scaleY(vy) + 3) + '" fill="#8b8b96" font-size="8">' + (vy % 1 ? vy.toFixed(0) : vy) + '</text>'; }
+    svg += '</g></svg>';
+    document.getElementById(containerId).innerHTML = svg;
+  }
+
+  function renderChart3() {
+    var avgMediumPct = avgVal(CONTRIB_DATA, function(d) { return d.contribution && d.contribution.mediumPct; });
+    var CONTRIB_HEIGHT = 300;
+    // 국가 순서: Thailand, Malaysia, Tajikistan, Kyrgyz Republic, Georgia, Kazakhstan, Armenia, Azerbaijan, Bangladesh
+    var CONTRIB_ORDER = ['Thailand', 'Malaysia', 'Tajikistan', 'Kyrgyz Republic', 'Georgia', 'Kazakhstan', 'Armenia', 'Azerbaijan', 'Bangladesh'];
+    var contribSorted = CONTRIB_DATA.slice().sort(function(a, b) {
+      var ia = CONTRIB_ORDER.indexOf(a.name);
+      var ib = CONTRIB_ORDER.indexOf(b.name);
+      if (ia >= 0 && ib >= 0) return ia - ib;
+      if (ia >= 0) return -1;
+      if (ib >= 0) return 1;
+      return 0;
+    });
+    var html = '<div class="contribution-bar-wrap" style="position:relative">';
+    html += '<div class="contribution-avg-line" style="bottom:' + (32 + (avgMediumPct / 100) * CONTRIB_HEIGHT) + 'px;left:0;right:0"></div>';
+    for (var i = 0; i < contribSorted.length; i++) {
+      var d = contribSorted[i];
+      var c = d.contribution;
+      if (!c) continue;
+      var microH = (c.microPct / 100) * CONTRIB_HEIGHT;
+      var smallH = (c.smallPct / 100) * CONTRIB_HEIGHT;
+      var mediumH = (c.mediumPct / 100) * CONTRIB_HEIGHT;
+      html += '<div class="contribution-bar-cell" title="' + d.name + ': Micro ' + c.microPct.toFixed(1) + '%, Small ' + c.smallPct.toFixed(1) + '%, Medium ' + c.mediumPct.toFixed(1) + '%">';
+      html += '<div class="contribution-stack" style="height:' + CONTRIB_HEIGHT + 'px">';
+      html += '<div class="seg-medium" style="height:' + mediumH + 'px"></div>';
+      html += '<div class="seg-small" style="height:' + smallH + 'px"></div>';
+      html += '<div class="seg-micro" style="height:' + microH + 'px"></div>';
+      html += '</div>';
+      html += '<div class="contribution-bar-label">' + d.name + '</div></div>';
+    }
+    html += '</div>';
+    html += '<p style="margin-top:0.5rem;font-size:0.75rem;color:#8b8b96">Micro(위) · Small(중간) · Medium-sized(아래) · 붉은 점선: Medium 기여도 평균 ' + avgMediumPct.toFixed(1) + '% · 국가 순서: Thailand→Malaysia→타지키스탄→키르기스스탄→조지아→카자흐스탄→아르메니아→아제르바이잔→방글라데시 · 2023 Scale of Enterprise 데이터 있는 국가만 표시 · Thailand: <a href="https://www.sme.go.th/knowledge/" target="_blank" rel="noopener">OSMEP MSME White Paper</a>·<a href="https://msmeindicator.com/pdf/reviews/gdp/" target="_blank" rel="noopener">มูลนิธิ สวค. GDP MSME</a> 2566</p>';
+    document.getElementById('chart3').innerHTML = html;
+  }
+
+  // Malaysia MSME 2024: Table 5 Value Added by Kind of Economic Activity (% of total MSME GDP). DOSM MSMEs Performance 2024. English only. B = sector group (color).
+  var MALAYSIA_SEGMENTATION = [
+    { sector: 'A', sectorName: 'Agriculture', name: 'Agriculture, forestry and fishing', pct: 8.7, color: '#22c55e' },
+    { sector: 'B', sectorName: 'Mining & Quarrying', name: 'Mining and quarrying', pct: 0.5, color: '#64748b' },
+    { sector: 'C', sectorName: 'Manufacturing', name: 'Food products', pct: 3.0, color: '#6366f1' },
+    { sector: 'C', sectorName: 'Manufacturing', name: 'Beverages and tobacco', pct: 0.8, color: '#6366f1' },
+    { sector: 'C', sectorName: 'Manufacturing', name: 'Textiles and wearing apparel', pct: 1.2, color: '#6366f1' },
+    { sector: 'C', sectorName: 'Manufacturing', name: 'Wood and paper products', pct: 2.0, color: '#6366f1' },
+    { sector: 'C', sectorName: 'Manufacturing', name: 'Chemicals and chemical products', pct: 2.8, color: '#6366f1' },
+    { sector: 'C', sectorName: 'Manufacturing', name: 'Metals and metal products', pct: 2.0, color: '#6366f1' },
+    { sector: 'C', sectorName: 'Manufacturing', name: 'Machinery and equipment', pct: 1.8, color: '#6366f1' },
+    { sector: 'C', sectorName: 'Manufacturing', name: 'Other manufacturing', pct: 8.2, color: '#6366f1' },
+    { sector: 'D', sectorName: 'Utilities', name: 'Electricity, gas, steam', pct: 0.3, color: '#94a3b8' },
+    { sector: 'E', sectorName: 'Construction', name: 'Construction', pct: 5.0, color: '#f59e0b' },
+    { sector: 'F', sectorName: 'Services', name: 'Wholesale and retail trade', pct: 17.0, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Transport and storage', pct: 5.0, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Accommodation and food service', pct: 4.0, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Information and communication', pct: 3.5, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Financial and insurance', pct: 4.5, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Real estate', pct: 3.0, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Professional, scientific and technical', pct: 5.0, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Administrative and support service', pct: 2.5, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Education', pct: 2.5, color: '#3b82f6' },
+    { sector: 'F', sectorName: 'Services', name: 'Human health and social work', pct: 2.5, color: '#3b82f6' },
+    // Other service activities: ISIC Rev.4 Section S (Div 94–96) — e.g. repair of goods, personal care, membership organizations; DOSM MSIC 2008 aligns with ISIC. See https://www.dosm.gov.my/portal-main/release-content/micro-small--medium-enterprises-msmes-performance-2024
+    { sector: 'F', sectorName: 'Services', name: 'Other service activities', pct: 9.3, color: '#3b82f6' }
+  ];
+
+  // Thailand MSME GDP by sector (% share) 2024 — 2025-adb-asia-sme-monitor-tha_0.xlsx Table 2_THA, row 48–54, col 2024
+  // Other services: ADB/ISIC Section S — e.g. repair of goods (Div 94–95), personal care (Div 96), membership organizations, activities of extraterritorial bodies. See ADB Asia SME Monitor methodology.
+  // Others*: Includes mining and electricity, gas and water supply.
+  var THAILAND_SEGMENTATION = [
+    { name: 'Agriculture, forestry, and fisheries', pct: 0.5, color: '#22c55e' },
+    { name: 'Manufacturing', pct: 32.2, color: '#6366f1' },
+    { name: 'Construction', pct: 4.1, color: '#f59e0b' },
+    { name: 'Wholesale and retail trade', pct: 21.1, color: '#3b82f6' },
+    { name: 'Other services', pct: 40.3, color: '#3b82f6' },
+    { name: 'Others*', pct: 1.8, color: '#94a3b8' }
+  ];
+
+  // Thailand MSME by region (% share) 2024 — 2025-adb-asia-sme-monitor-tha_0.xlsx Table 2_THA, row 22–23, col 2024
+  var THAILAND_REGIONS = [
+    { id: 'Bangkok', name: 'Capital city (Bangkok)', pct: 16.6 },
+    { id: 'Others', name: 'Others', pct: 83.4 }
+  ];
+
+  // Malaysia MSMEs by region (% share) 2023 — 2024 ADB Asia SME Monitor - MAL.xlsx Table 2_MAL, row 23–24, col 2023
+  var MALAYSIA_REGIONS = [
+    { id: 'KualaLumpur', name: 'Capital city (Kuala Lumpur)', pct: 12.3 },
+    { id: 'Others', name: 'Others', pct: 87.7 }
+  ];
+
+  function renderThailandSegmentation() {
+    var data = THAILAND_SEGMENTATION.slice().sort(function(a, b) { return b.pct - a.pct; });
+    var total = data.reduce(function(s, d) { return s + d.pct; }, 0);
+    if (total <= 0) return;
+    var container = document.getElementById('chart-seg-thailand');
+    var legendEl = document.getElementById('chart-seg-thailand-legend');
+    if (!container || !legendEl) return;
+    var tooltip = document.getElementById('sector-tooltip');
+    if (!tooltip) tooltip = document.querySelector('.sector-tooltip');
+    var w = 360, h = 360, cx = w / 2, cy = h / 2, r = 140, innerR = 70;
+    var sum = 0;
+    var slices = [];
+    for (var i = 0; i < data.length; i++) {
+      var start = sum;
+      sum += data[i].pct / total;
+      slices.push({ start: start * 2 * Math.PI, end: sum * 2 * Math.PI, d: data[i] });
+    }
+    function arcPath(sA, eA, ir) {
+      var large = (eA - sA) > Math.PI ? 1 : 0;
+      return 'M ' + (cx + r * Math.cos(sA)) + ' ' + (cy + r * Math.sin(sA)) + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + (cx + r * Math.cos(eA)) + ' ' + (cy + r * Math.sin(eA)) + ' L ' + (cx + ir * Math.cos(eA)) + ' ' + (cy + ir * Math.sin(eA)) + ' A ' + ir + ' ' + ir + ' 0 ' + large + ' 0 ' + (cx + ir * Math.cos(sA)) + ' ' + (cy + ir * Math.sin(sA)) + ' Z';
+    }
+    var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet"><g>';
+    for (var i = 0; i < slices.length; i++) {
+      var s = slices[i];
+      var sA = s.start - Math.PI / 2, eA = s.end - Math.PI / 2;
+      svg += '<path class="seg-slice" fill="' + s.d.color + '" d="' + arcPath(sA, eA, innerR) + '" data-name="' + s.d.name.replace(/"/g, '&quot;') + '" data-pct="' + s.d.pct.toFixed(1) + '"/>';
+    }
+    svg += '</g></svg>';
+    container.innerHTML = svg;
+    var legendHtml = '<h4>By industry sector</h4><ul>';
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      legendHtml += '<li><span style="display:inline-block;width:10px;height:10px;background:' + d.color + ';margin-right:6px;vertical-align:middle;"></span> ' + d.name + ': <span class="pct">' + d.pct.toFixed(1) + '%</span></li>';
+    }
+    legendHtml += '</ul>';
+    legendEl.innerHTML = legendHtml;
+    container.querySelectorAll('.seg-slice').forEach(function(path) {
+      path.addEventListener('mouseenter', function(e) {
+        if (tooltip) {
+          tooltip.textContent = path.getAttribute('data-name') + ' — ' + path.getAttribute('data-pct') + '%';
+          tooltip.classList.add('visible');
+          tooltip.style.left = (e.clientX + 12) + 'px';
+          tooltip.style.top = (e.clientY + 12) + 'px';
+        }
+      });
+      path.addEventListener('mousemove', function(e) {
+        if (tooltip) { tooltip.style.left = (e.clientX + 12) + 'px'; tooltip.style.top = (e.clientY + 12) + 'px'; }
+      });
+      path.addEventListener('mouseleave', function() {
+        if (tooltip) tooltip.classList.remove('visible');
+      });
+    });
+  }
+
+  // Thailand 2 regions (Bangkok / Others) — choropleth by MSME % share, region names on map
+  function renderThailandRegionMap() {
+    var data = THAILAND_REGIONS;
+    var maxPct = Math.max.apply(null, data.map(function(d) { return d.pct; }));
+    if (maxPct <= 0) maxPct = 1;
+    var container = document.getElementById('chart-thailand-region');
+    var legendEl = document.getElementById('chart-thailand-region-legend');
+    if (!container || !legendEl) return;
+    function fillForPct(pct) {
+      var t = pct / maxPct;
+      var r = Math.round(99 + (156 - 99) * (1 - t));
+      var g = Math.round(102 + (126 - 102) * (1 - t));
+      var b = Math.round(241 + (246 - 241) * (1 - t));
+      return 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+    // Two areas: left = Bangkok, right = Others (with region name labels on map)
+    var regions = [
+      { id: 'Bangkok', path: 'M 0,0 L 120,0 L 120,400 L 0,400 Z', name: 'Bangkok', pct: data[0].pct, cx: 60, cy: 200 },
+      { id: 'Others', path: 'M 120,0 L 400,0 L 400,400 L 120,400 Z', name: 'Others', pct: data[1].pct, cx: 260, cy: 200 }
+    ];
+    var svg = '<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"><g>';
+    for (var j = 0; j < regions.length; j++) {
+      var r = regions[j];
+      svg += '<path class="region-path" fill="' + fillForPct(r.pct) + '" d="' + r.path + '" data-region="' + r.id + '" data-pct="' + r.pct.toFixed(1) + '"/>';
+      svg += '<text x="' + r.cx + '" y="' + (r.cy - 8) + '" text-anchor="middle" fill="#e8e8ed" font-size="14" font-weight="600">' + r.name + '</text>';
+      svg += '<text x="' + r.cx + '" y="' + (r.cy + 10) + '" text-anchor="middle" fill="#a5b4fc" font-size="12">' + r.pct.toFixed(1) + '%</text>';
+    }
+    svg += '</g></svg>';
+    container.innerHTML = svg;
+    var legendHtml = '<h4>By region</h4><ul>';
+    for (var k = 0; k < data.length; k++) {
+      var d = data[k];
+      legendHtml += '<li><span style="display:inline-block;width:10px;height:10px;background:' + fillForPct(d.pct) + ';margin-right:6px;vertical-align:middle;border:1px solid #2a2a30;"></span> ' + d.name + ': <span class="pct">' + d.pct.toFixed(1) + '%</span></li>';
+    }
+    legendHtml += '</ul>';
+    legendEl.innerHTML = legendHtml;
+  }
+
+  // Malaysia 2 regions (Kuala Lumpur / Others) — choropleth by MSME % share, region names on map
+  function renderMalaysiaRegionMap() {
+    var data = MALAYSIA_REGIONS;
+    var maxPct = Math.max.apply(null, data.map(function(d) { return d.pct; }));
+    if (maxPct <= 0) maxPct = 1;
+    var container = document.getElementById('chart-malaysia-region');
+    var legendEl = document.getElementById('chart-malaysia-region-legend');
+    if (!container || !legendEl) return;
+    function fillForPct(pct) {
+      var t = pct / maxPct;
+      var r = Math.round(99 + (156 - 99) * (1 - t));
+      var g = Math.round(102 + (126 - 102) * (1 - t));
+      var b = Math.round(241 + (246 - 241) * (1 - t));
+      return 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+    var regions = [
+      { id: 'KualaLumpur', path: 'M 0,0 L 120,0 L 120,400 L 0,400 Z', name: 'Kuala Lumpur', pct: data[0].pct, cx: 60, cy: 200 },
+      { id: 'Others', path: 'M 120,0 L 400,0 L 400,400 L 120,400 Z', name: 'Others', pct: data[1].pct, cx: 260, cy: 200 }
+    ];
+    var svg = '<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"><g>';
+    for (var j = 0; j < regions.length; j++) {
+      var r = regions[j];
+      svg += '<path class="region-path" fill="' + fillForPct(r.pct) + '" d="' + r.path + '" data-region="' + r.id + '" data-pct="' + r.pct.toFixed(1) + '"/>';
+      svg += '<text x="' + r.cx + '" y="' + (r.cy - 8) + '" text-anchor="middle" fill="#e8e8ed" font-size="14" font-weight="600">' + r.name + '</text>';
+      svg += '<text x="' + r.cx + '" y="' + (r.cy + 10) + '" text-anchor="middle" fill="#a5b4fc" font-size="12">' + r.pct.toFixed(1) + '%</text>';
+    }
+    svg += '</g></svg>';
+    container.innerHTML = svg;
+    var legendHtml = '<h4>By region</h4><ul>';
+    for (var k = 0; k < data.length; k++) {
+      var d = data[k];
+      legendHtml += '<li><span style="display:inline-block;width:10px;height:10px;background:' + fillForPct(d.pct) + ';margin-right:6px;vertical-align:middle;border:1px solid #2a2a30;"></span> ' + d.name + ': <span class="pct">' + d.pct.toFixed(1) + '%</span></li>';
+    }
+    legendHtml += '</ul>';
+    legendEl.innerHTML = legendHtml;
+  }
+
+  function renderMalaysiaSegmentation() {
+    var data = MALAYSIA_SEGMENTATION;
+    var total = data.reduce(function(s, d) { return s + d.pct; }, 0);
+    if (total <= 0) return;
+    var container = document.getElementById('chart-seg-malaysia');
+    var legendEl = document.getElementById('chart-seg-malaysia-legend');
+    if (!container || !legendEl) return;
+    var tooltip = document.getElementById('sector-tooltip');
+    if (!tooltip) tooltip = document.querySelector('.sector-tooltip');
+    var w = 360, h = 360, cx = w / 2, cy = h / 2, r = 140, innerR = 70;
+    var sum = 0;
+    var slices = [];
+    for (var i = 0; i < data.length; i++) {
+      var start = sum;
+      sum += data[i].pct / total;
+      slices.push({ start: start * 2 * Math.PI, end: sum * 2 * Math.PI, d: data[i] });
+    }
+    function arcPath(sA, eA, ir) {
+      var large = (eA - sA) > Math.PI ? 1 : 0;
+      return 'M ' + (cx + r * Math.cos(sA)) + ' ' + (cy + r * Math.sin(sA)) + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + (cx + r * Math.cos(eA)) + ' ' + (cy + r * Math.sin(eA)) + ' L ' + (cx + ir * Math.cos(eA)) + ' ' + (cy + ir * Math.sin(eA)) + ' A ' + ir + ' ' + ir + ' 0 ' + large + ' 0 ' + (cx + ir * Math.cos(sA)) + ' ' + (cy + ir * Math.sin(sA)) + ' Z';
+    }
+    var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet"><g>';
+    for (var i = 0; i < slices.length; i++) {
+      var s = slices[i];
+      var sA = s.start - Math.PI / 2, eA = s.end - Math.PI / 2;
+      var pathD = arcPath(sA, eA, innerR);
+      svg += '<path class="seg-slice" fill="' + s.d.color + '" d="' + pathD + '" data-name="' + s.d.name.replace(/"/g, '&quot;') + '" data-pct="' + s.d.pct.toFixed(1) + '" data-sector="' + s.d.sectorName + '"/>';
+    }
+    svg += '</g></svg>';
+    container.innerHTML = svg;
+    var bySector = {};
+    for (var j = 0; j < data.length; j++) {
+      var sn = data[j].sectorName;
+      if (!bySector[sn]) bySector[sn] = { name: sn, pct: 0, color: data[j].color };
+      bySector[sn].pct += data[j].pct;
+    }
+    var sectorList = Object.keys(bySector).map(function(k) { return bySector[k]; });
+    sectorList.sort(function(a, b) { return b.pct - a.pct; });
+    var legendHtml = '<h4>By industry sector</h4><ul>';
+    for (var si = 0; si < sectorList.length; si++) {
+      var s = sectorList[si];
+      legendHtml += '<li><span style="display:inline-block;width:10px;height:10px;background:' + s.color + ';margin-right:6px;vertical-align:middle;"></span> ' + s.name + ': <span class="pct">' + s.pct.toFixed(1) + '%</span></li>';
+    }
+    legendHtml += '</ul>';
+    var subSorted = data.slice().sort(function(a, b) { return b.pct - a.pct; });
+    var top6 = subSorted.slice(0, 6);
+    legendHtml += '<h4 style="margin-top:1rem;">By sub-sector (top 6)</h4><ul>';
+    for (var ti = 0; ti < top6.length; ti++) {
+      var d = top6[ti];
+      legendHtml += '<li><span style="display:inline-block;width:10px;height:10px;background:' + d.color + ';margin-right:6px;vertical-align:middle;"></span> ' + d.name + ': <span class="pct">' + d.pct.toFixed(1) + '%</span></li>';
+    }
+    legendHtml += '</ul>';
+    legendEl.innerHTML = legendHtml;
+    container.querySelectorAll('.seg-slice').forEach(function(path) {
+      path.addEventListener('mouseenter', function(e) {
+        if (tooltip) {
+          tooltip.textContent = path.getAttribute('data-name') + ' — ' + path.getAttribute('data-pct') + '% (' + path.getAttribute('data-sector') + ')';
+          tooltip.classList.add('visible');
+          tooltip.style.left = (e.clientX + 12) + 'px';
+          tooltip.style.top = (e.clientY + 12) + 'px';
+        }
+      });
+      path.addEventListener('mousemove', function(e) {
+        if (tooltip) { tooltip.style.left = (e.clientX + 12) + 'px'; tooltip.style.top = (e.clientY + 12) + 'px'; }
+      });
+      path.addEventListener('mouseleave', function() {
+        if (tooltip) tooltip.classList.remove('visible');
+      });
+    });
+  }
+
+  function bindFilters() {
+    document.getElementById('filter-chart1').onchange = function() { renderChart1(this.value); };
+    document.getElementById('filter-chart2').onchange = function() { renderLineChart('chart2', MSME_DATA, function(d,y) { return d.msme_gdp_pct[y]; }, this.value, 0, 100); };
+    document.getElementById('filter-chart6').onchange = function() { renderLineChart('chart6', FINANCE_20, function(d,y) { return d.checking_pct[y]; }, this.value, 0, 100); };
+    document.getElementById('filter-chart7').onchange = function() { renderLineChart('chart7', FINANCE_20, function(d,y) { return d.bank_wc_pct[y]; }, this.value, 0, 100); };
+    document.getElementById('filter-chart8').onchange = function() { renderLineChart('chart8', FINANCE_20, function(d,y) { return d.electronic_pct[y]; }, this.value, 0, 100); };
+  }
+
+  function applyPageAndTab(pageId, tabId) {
+    pageId = pageId || 'summary';
+    document.querySelectorAll('.page-nav button').forEach(function(b) { b.classList.toggle('active', b.dataset.page === pageId); });
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.toggle('active', p.id === 'page-' + pageId); });
+    if (pageId === 'whereto' && tabId) {
+      var panelEl = document.getElementById('panel' + tabId);
+      if (panelEl) {
+        document.querySelectorAll('#tabs-country button').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === tabId); });
+        document.querySelectorAll('.chart-panel').forEach(function(p) { p.classList.remove('active'); });
+        panelEl.classList.add('active');
+      }
+    }
+  }
+
+  function syncHashToUrl(pageId, tabId) {
+    if (!pageId || pageId === 'summary') {
+      if (history.replaceState) history.replaceState(null, '', window.location.pathname + window.location.search);
+      else location.hash = '';
+      return;
+    }
+    var hash = '#' + pageId + (pageId === 'whereto' && tabId ? '-' + tabId : '');
+    if (location.hash !== hash) {
+      if (history.replaceState) history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+      else location.hash = hash;
+    }
+  }
+
+  function readHash() {
+    var hash = (location.hash || '').replace(/^#/, '');
+    if (!hash) return { pageId: 'summary', tabId: null };
+    var parts = hash.split('-');
+    if (parts[0] === 'whereto' && parts.length > 1) {
+      return { pageId: 'whereto', tabId: parts.slice(1).join('-') };
+    }
+    return { pageId: hash || 'summary', tabId: null };
+  }
+
+  document.getElementById('tabs-country').addEventListener('click', function(e) {
+    var btn = e.target;
+    if (btn.tagName !== 'BUTTON' || !btn.dataset.tab) return;
+    var tabId = btn.dataset.tab;
+    document.querySelectorAll('#tabs-country button').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.chart-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('panel' + tabId).classList.add('active');
+    syncHashToUrl('whereto', tabId);
+  });
+
+  document.getElementById('tabs-industry').addEventListener('click', function(e) {
+    var btn = e.target;
+    if (btn.tagName !== 'BUTTON' || !btn.dataset.tab) return;
+    var tabId = btn.dataset.tab;
+    document.querySelectorAll('#tabs-industry button').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.chart-panel-industry').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('panel' + tabId).classList.add('active');
+  });
+
+  document.getElementById('page-nav').addEventListener('click', function(e) {
+    var btn = e.target;
+    if (btn.tagName !== 'BUTTON' || !btn.dataset.page) return;
+    var pageId = btn.dataset.page;
+    applyPageAndTab(pageId, null);
+    syncHashToUrl(pageId, null);
+  });
+
+  window.addEventListener('hashchange', function() {
+    var state = readHash();
+    applyPageAndTab(state.pageId, state.tabId);
+  });
+
+  (function applyInitialHash() {
+    var state = readHash();
+    if (state.pageId !== 'summary' || state.tabId) applyPageAndTab(state.pageId, state.tabId);
+  })();
+
+  var howtoTabs = document.getElementById('howto-tabs');
+  if (howtoTabs) {
+    howtoTabs.addEventListener('click', function(e) {
+      var btn = e.target;
+      if (btn.tagName !== 'BUTTON' || !btn.dataset.howtoCountry) return;
+      var country = btn.dataset.howtoCountry;
+      document.querySelectorAll('.howto-tabs button').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.querySelectorAll('.howto-panel').forEach(function(p) { p.classList.remove('active'); });
+      var panel = document.getElementById('howto-panel-' + country);
+      if (panel) panel.classList.add('active');
+    });
+  }
+
+  var appendixTabs = document.getElementById('appendix-tabs');
+  if (appendixTabs) {
+    appendixTabs.addEventListener('click', function(e) {
+      var btn = e.target;
+      if (btn.tagName !== 'BUTTON' || !btn.dataset.appendixTab) return;
+      var tabId = btn.dataset.appendixTab;
+      document.querySelectorAll('.appendix-tabs button').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.appendix-panel').forEach(function(p) { p.classList.remove('active'); });
+      var panel = document.getElementById('appendix-panel-' + tabId);
+      if (panel) panel.classList.add('active');
+    });
+  }
+
+  function init() {
+    updateExecSummary();
+    renderChart1(2023);
+    renderLineChart('chart2', MSME_DATA, function(d,y) { return d.msme_gdp_pct[y]; }, 2023, 0, 100);
+    renderChart3();
+    renderLineChart('chart6', FINANCE_20, function(d,y) { return d.checking_pct[y]; }, 2024, 0, 100);
+    renderLineChart('chart7', FINANCE_20, function(d,y) { return d.bank_wc_pct[y]; }, 2024, 0, 100);
+    renderLineChart('chart8', FINANCE_20, function(d,y) { return d.electronic_pct[y]; }, 2024, 0, 100);
+    renderMalaysiaSegmentation();
+    renderThailandSegmentation();
+    renderThailandRegionMap();
+    renderMalaysiaRegionMap();
+    bindFilters();
+    bindMalaysiaCorpFilter();
+    if (typeof initAppendixCharts === 'function') initAppendixCharts();
+  }
+
+  var FX_2024 = { THB: 35.26, MYR: 4.6, PHP: 57.3 };
+  var CM_INFRA_NAMES = ['PromptPay', 'BAHTNET', 'DuitNow', 'PayNet'];
+  var CM_INFRA_COUNTRIES = ['Thailand', 'Thailand', 'Malaysia', 'Malaysia'];
+  var CM_INFRA_REVENUE = [1333000, 927000, 6760, 1174000];
+  var CM_INFRA_REVENUE_LABELS = ['1.33M', '927K', '6.8K', '1.17M'];
+  var CM_INFRA_CUSTOMERS = [77, 0.03, 2.6, 0.042];
+  var CM_INFRA_CUSTOMER_LABELS = ['77', '0.03', '2.6', '0.04'];
+
+  var CM_SAAS_NAMES = ['K-BIZ', 'KTB Business', 'SCB Business', 'CHIP', 'Swipey', 'Airwallex'];
+  var CM_SAAS_COUNTRIES = ['Thailand', 'Thailand', 'Thailand', 'Malaysia', 'Malaysia', 'Malaysia'];
+  var CM_SAAS_REVENUE = [80, 30, 25, 3, 2, 20];
+  var CM_SAAS_REVENUE_LABELS = ['80', '30', '25', '3', '2', '20'];
+  var CM_SAAS_CUSTOMERS = [1.2, 0.5, 0.3, 0.005, 0.002, 0.005];
+  var CM_SAAS_CUSTOMER_LABELS = ['1.2', '0.5', '0.3', '0.005', '0.002', '0.005'];
+
+  function renderAppendixCombo(containerId, names, countryNames, revenues, revenueLabels, customers, customerLabels) {
+    var wrap = document.getElementById(containerId);
+    if (!wrap || !names.length) return;
+    var n = names.length;
+    var maxRev = Math.max.apply(null, revenues);
+    var maxCust = Math.max.apply(null, customers);
+    if (maxRev <= 0) maxRev = 1;
+    if (maxCust <= 0) maxCust = 1;
+    var w = 900; var h = 260; var pad = { left: 52, right: 52, top: 24, bottom: 52 };
+    var x0 = pad.left; var x1 = w - pad.right; var y0 = pad.top; var y1 = h - pad.bottom;
+    var barW = (x1 - x0) / n * 0.5;
+    var gap = (x1 - x0) / n;
+    var scaleX = function(i) { return x0 + gap * (i + 0.5); };
+    var scaleRev = function(v) { return y1 - (v / maxRev) * (y1 - y0); };
+    var scaleCust = function(v) { return y1 - (v / maxCust) * (y1 - y0); };
+    var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet"><g>';
+    for (var i = 0; i < n; i++) {
+      var x = scaleX(i); var barH = y1 - scaleRev(revenues[i]);
+      svg += '<rect class="bar-revenue" x="' + (x - barW/2) + '" y="' + scaleRev(revenues[i]) + '" width="' + barW + '" height="' + barH + '" rx="2"/>';
+      svg += '<text class="axis-label" x="' + x + '" y="' + (y1 + 12) + '" text-anchor="middle">' + names[i] + '</text>';
+      svg += '<text class="axis-label" x="' + x + '" y="' + (y1 + 26) + '" text-anchor="middle" fill="#6b7280">' + (countryNames ? countryNames[i] : '') + '</text>';
+      svg += '<text class="axis-label" x="' + (x - barW/2 - 2) + '" y="' + (scaleRev(revenues[i]) - 4) + '" text-anchor="end">' + revenueLabels[i] + '</text>';
+    }
+    var pts = [];
+    for (var i = 0; i < n; i++) pts.push(scaleX(i) + ',' + scaleCust(customers[i]));
+    svg += '<polyline class="line-customers" points="' + pts.join(' ') + '"/>';
+    for (var i = 0; i < n; i++) {
+      var x = scaleX(i); var cy = scaleCust(customers[i]);
+      svg += '<circle class="line-point" cx="' + x + '" cy="' + cy + '" r="4"/>';
+      svg += '<text class="axis-label" x="' + (x + barW/2 + 2) + '" y="' + (cy + 4) + '" text-anchor="start">' + customerLabels[i] + '</text>';
+    }
+    svg += '<text class="legend" x="' + x0 + '" y="12">막대: 매출(M USD, 좌)</text>';
+    svg += '<text class="legend" x="' + (x1 - 100) + '" y="12">라인: 고객수(M people, 우)</text>';
+    svg += '</g></svg>';
+    wrap.innerHTML = svg;
+  }
+
+  function initAppendixCharts() {
+    renderAppendixCombo('appendix-combo-infra', CM_INFRA_NAMES, CM_INFRA_COUNTRIES, CM_INFRA_REVENUE, CM_INFRA_REVENUE_LABELS, CM_INFRA_CUSTOMERS, CM_INFRA_CUSTOMER_LABELS);
+    renderAppendixCombo('appendix-combo-saas', CM_SAAS_NAMES, CM_SAAS_COUNTRIES, CM_SAAS_REVENUE, CM_SAAS_REVENUE_LABELS, CM_SAAS_CUSTOMERS, CM_SAAS_CUSTOMER_LABELS);
+  }
+
+  function bindMalaysiaCorpFilter() {
+    var gdpSel = document.getElementById('filter-malaysia-gdp');
+    var penSel = document.getElementById('filter-malaysia-pen');
+    var table = document.getElementById('table-malaysia-corp');
+    if (!gdpSel || !penSel || !table) return;
+    function filterRows() {
+      var gdp = (gdpSel.value || '').toLowerCase();
+      var pen = (penSel.value || '').toLowerCase();
+      var rows = table.querySelectorAll('tbody tr');
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        var matchGdp = !gdp || (r.getAttribute('data-gdp') || '') === gdp;
+        var matchPen = !pen || (r.getAttribute('data-pen') || '') === pen;
+        r.style.display = (matchGdp && matchPen) ? '' : 'none';
+      }
+    }
+    gdpSel.addEventListener('change', filterRows);
+    penSel.addEventListener('change', filterRows);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+  </script>
+</body>
+</html>
