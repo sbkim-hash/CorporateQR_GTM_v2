@@ -63,6 +63,13 @@
     .contribution-stack .seg-medium { background: #5b21b6; }
     .contribution-avg-line { position: absolute; left: 0; right: 0; height: 0; border-top: 2px dashed #dc2626; z-index: 2; pointer-events: none; }
     .contribution-bar-label { font-size: 0.6rem; color: #8b8b96; margin-top: 6px; text-align: center; transform: rotate(-45deg); white-space: nowrap; max-width: 52px; overflow: hidden; text-overflow: ellipsis; }
+    .contrib-callout-row { display: flex; gap: 4px; padding: 0 0 0.5rem 0; align-items: flex-end; }
+    .contrib-callout-cell { flex: 1; min-width: 0; display: flex; justify-content: center; }
+    .contrib-callout-bubble { background: rgba(99,102,241,0.15); border: 1px solid #3a3a42; border-radius: 8px; padding: 0.4rem 0.55rem; font-size: 0.65rem; line-height: 1.45; color: #a0a0a8; max-width: 220px; position: relative; text-align: left; }
+    .contrib-callout-bubble::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #3a3a42; }
+    .contrib-callout-bubble strong { color: #a5b4fc; font-size: 0.68rem; }
+    .contrib-callout-bubble .cb-line { display: block; margin-top: 1px; }
+    .contrib-callout-bubble .cb-num { color: #e8e8ed; font-weight: 600; }
 
     .line-chart-wrap { width: 100%; height: 400px; }
     .line-chart-wrap svg { width: 100%; height: 100%; }
@@ -252,9 +259,28 @@
     .summary-page .summary-oneline { white-space: nowrap; font-size: 0.7rem; line-height: 1.5; color: #a0a0a8; }
     .summary-page .summary-section h2 { font-size: 0.98rem; }
     .summary-page .summary-section h3 { font-size: 0.82rem; margin: 0.65rem 0 0.35rem; }
-    .summary-page .summary-section p { font-size: 0.78rem; line-height: 1.45; }
-    .summary-page .summary-section ul { font-size: 0.78rem; line-height: 1.45; }
-    .summary-page .summary-sub { font-size: 0.76rem; line-height: 1.4; }
+    .summary-page .summary-section p { font-size: 0.82rem; line-height: 1.5; }
+    .summary-page .summary-section ul { font-size: 0.82rem; line-height: 1.5; }
+    .summary-page .summary-sub { font-size: 0.82rem; line-height: 1.5; }
+
+    .summary-version-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; padding: 0.5rem 0; border-bottom: 1px solid #2a2a30; }
+    .summary-version-tabs button { background: #18181c; color: #8b8b96; border: 1px solid #2a2a30; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: all 0.15s; }
+    .summary-version-tabs button:hover { color: #e8e8ed; border-color: #3a3a42; }
+    .summary-version-tabs button.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+    .summary-version-panel { display: none; }
+    .summary-version-panel.active { display: block; }
+    .summary-version-badge { display: inline-block; font-size: 0.62rem; font-weight: 700; border-radius: 3px; padding: 0.15rem 0.4rem; margin-left: 0.35rem; vertical-align: middle; letter-spacing: 0.02em; }
+    .badge-new { background: rgba(34,197,94,0.2); color: #86efac; }
+    .badge-old { background: rgba(239,68,68,0.15); color: #f87171; }
+    .summary-red { color: #ef4444; font-weight: 600; }
+    .summary-compare-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0.75rem 0; }
+    .summary-compare-table th, .summary-compare-table td { border: 1px solid #2a2a30; padding: 0.55rem 0.75rem; text-align: left; vertical-align: top; }
+    .summary-compare-table th { background: #1f1f24; color: #a5b4fc; font-weight: 600; }
+    .summary-compare-table th:first-child { width: 9rem; color: #8b8b96; }
+    .summary-compare-table td { background: #18181c; color: #e8e8ed; line-height: 1.45; }
+    .summary-compare-table td:first-child { color: #8b8b96; font-weight: 500; }
+    .summary-compare-table .flag-header { font-size: 0.82rem; }
+    .summary-subheading { font-size: 0.82rem; color: #a5b4fc; font-weight: 600; margin: 0.85rem 0 0.35rem; }
   </style>
 </head>
 <body>
@@ -273,81 +299,220 @@
     </header>
 
     <div id="page-summary" class="page active summary-page">
-      <section class="summary-section">
-        <h2>Where to</h2>
-        <p>Corporate finance service에 대한 MSME의 높은 수요에도 불구하고, 사용률이 저조한 대표적인 국가는 <span class="summary-highlight">Thailand, Malaysia</span>임</p>
-        <div class="summary-sub">Thailand의 MSME는 179B USD 규모로 GDP의 35%를 차지하나, 법인의 운전자본 중 31%만 은행 계좌를 통해 거래되며 침투율이 낮음</div>
-        <div class="summary-sub">Malaysia의 MSME는 134B USD 규모로 GDP의 39%를 차지하나, 법인 계좌를 통해 결제되는 비율이 마찬가지로 38%밖에 되지 않음</div>
-        <p style="margin-top:0.75rem;">세그먼트별 규모와 직원의 법인 결제가 발생하는 use-case를 고려했을 때 두 국가에서는 각각 아래 세그먼트를 타겟할 수 있음</p>
-        <h3>Thailand</h3>
-        <ul>
-          <li><span class="summary-highlight"><strong>물류</strong> (식자재 도매, 건자재 유통)</span> : 하역/하차 인력비용 결제, 원자재 대금 지불, 배송 중 주유 및 긴급 차량 수리비 처리 등</li>
-          <li><span class="summary-highlight"><strong>서비스</strong> (호텔, F&B 프랜차이즈)</span> : 식재료 결제, 외부 협력업체/프리랜서 용역비 정산</li>
-        </ul>
-        <h3>Malaysia</h3>
-        <ul>
-          <li><span class="summary-highlight"><strong>도소매</strong> (이커머스)</span> : 소모성 자재 구매</li>
-          <li><span class="summary-highlight"><strong>물류</strong> (물류 대행)</span> : 수출입 관세 및 통관 대행, 물류 차량 통행료/주차비 결제 등</li>
-          <li><span class="summary-highlight"><strong>서비스</strong> (광고에이전시, F&B 프랜차이즈)</span> : 식재료 결제, 외부 협력업체/프리랜서 용역비 정산 등</li>
-        </ul>
-      </section>
-      <section class="summary-section">
-        <h2>Why so</h2>
-        <p>두 국가는 공통적으로 1) 은행에서 요구하는 높은 담보 및 서류 요건과 2) 수수료 부담으로 법인카드 발급 및 사용률이 낮음</p>
-        <h3>1)</h3>
-        <ul>
-          <li><strong>복잡한 발행 요건:</strong> 법인 카드 발행 시 <span class="summary-highlight">감사보고서와 은행 거래 내역 등을 증빙</span>해야 하는데, 보고서 체계가 미비한 영세기업은 이로 인해 발급 자체가 낮음</li>
-          <li><strong>까다로운 한도 설정:</strong> <span class="summary-highlight">부동산, 예금 담보를 기반으로 한도</span>를 설정할 수 있어, 담보 자산이 없는 온라인 및 영세기업은 한도 설정에 어려움을 겪음</li>
-        </ul>
-        <h3>2)</h3>
-        <ul>
-          <li><strong>수수료:</strong> 법인카드 결제 수수료는 Thailand 2~4%, Malaysia 0.6%로 법인 QR 결제 0.25~0.5% 대비 높은 <span class="summary-highlight">수수료 부담</span>이 존재함</li>
-          <li><strong>정산 지연:</strong> 또한 신용카드 결제 이후 정산은 일반적으로 <span class="summary-highlight">T+1~3 영업일 소요</span>되어, 법인 비용 관리에 시간적 격차가 존재함</li>
-        </ul>
-      </section>
-      <section class="summary-section">
-        <h2>How to</h2>
-        <p style="margin-top:0.5rem;"><strong>&lt;단계별 진출 전략&gt;</strong></p>
-        <h3>Thailand - "높은 완성도, 높은 장벽" (Low Priority)</h3>
-        <ul>
-          <li>Thailand 정부는 2015년부터 'National e-Payment Master Plan'을 세우고, 모든 은행 계좌를 전화번호나 법인 번호(Tax ID)와 연결하는 PromptPay 인프라를 구축함</li>
-          <li>덕분에 은행들이 이 인프라 위에 법인 전용 관리 기능만 얹으면 바로 '법인 QR 서비스'를 제공할 수 있어, 일찍부터 은행 위주의 법인 QR 서비스가 확대되었음</li>
-          <li><span class="storehub-arrow">⇒ K BIZ(Kasikorn Bank)가 300만 MSME 중 120만을 확보하여 독점적 위치 보유; 신규 진입장벽 존재</span></li>
-          <li>또한 핀테크가 신규 진출 시 E-Money 라이선스가 필요하고, 이때 자본금 요건이 1억 바트(약 38억 원)로 매우 높음</li>
-          <li>그럼에도 불구하고, 1) 해당 은행 계좌에 법인을 등록하고, 모든 직원들도 해당 은행 계좌를 신설해야 하는 까다로운 발급/사용 조건, 2) 사용 후 까다로운 정산 시스템으로 여전히 MSME들의 사용 편의성을 제고할 부분은 존재</li>
-        </ul>
-        <h3>Malaysia - "열린 기회, 유연한 생태계" (High Priority)</h3>
-        <ul>
-          <li>CHIP, Airwallex, Swipey 등 핀테크사가 SME 시장을 혁신 중이나, 아직까지 Thailand만큼 QR 인프라가 단일화되어 있지 않고 침투율도 상대적으로 낮아 <span class="summary-highlight">법인카드/QR이 혼재</span>되어 있는 상황</li>
-          <li>이에 현장 현금결제가 많이 필요한 도소매 유통, F&B 프랜차이즈는 CHIP (QR만 제공), 해외 결제가 많은 테크/에이전시는 Swipey (최근까지 카드만 제공), 다국적 기업 대상 Airwallex (카드만 제공)로 이용층이 분리되어 있음</li>
-          <li>신규 핀테크사가 E-Money 라이선스 확보 시, 자본금 요건이 상대적으로 낮고(약 3억~15억 원), 금융 규제 샌드박스와 BaaS(Banking-as-a-Service) 인프라도 발달하여 우회 진출이 용이한 구조</li>
-          <li>이에, <span class="summary-highlight">법인카드/QR dual track으로 공격적 진출 시, 광범위한 수요층을 확보할 기회</span> 존재</li>
-        </ul>
-        <div class="summary-grey-box">
-          <h3>Step 1: Malaysia 우선 진출</h3>
+      <nav class="summary-version-tabs" id="summary-version-tabs">
+        <button type="button" class="active" data-summary-tab="new">Newly Updated <span class="summary-version-badge badge-new">NEW</span></button>
+        <button type="button" data-summary-tab="old">Outdated <span class="summary-version-badge badge-old">OLD</span></button>
+      </nav>
+
+      <!-- ===== Newly Updated ===== -->
+      <div id="summary-panel-new" class="summary-version-panel active">
+
+        <section class="summary-section">
+          <h2>Where to</h2>
+          <p class="summary-red" style="margin-bottom:0.5rem;">※ SCB, Airwallex 인터뷰를 통해 추가 검증 예정</p>
+
+          <table class="summary-compare-table">
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th class="flag-header">Thailand (태국)</th>
+                <th class="flag-header">Malaysia (말레이시아)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>MSME GDP 규모</td>
+                <td><strong>179B USD</strong> (전체 GDP의 35%)</td>
+                <td><strong>134B USD</strong> (전체 GDP의 39%)</td>
+              </tr>
+              <tr>
+                <td>디지털 결제 침투율</td>
+                <td><strong>31%</strong> (운전자본 거래 기준)</td>
+                <td><strong>38%</strong> (법인 계좌 결제 기준)</td>
+              </tr>
+              <tr>
+                <td>기업 수 (MSME)</td>
+                <td>약 <strong>320만</strong> 개</td>
+                <td>약 <strong>120만</strong> 개</td>
+              </tr>
+              <tr>
+                <td>기업당 구매력</td>
+                <td><span class="summary-highlight">High</span> (Medium size 비중 50%로 집중)</td>
+                <td>Medium (Small size 롱테일 시장)</td>
+              </tr>
+              <tr>
+                <td>경쟁 강도</td>
+                <td><span style="color:#f59e0b;font-weight:600;">중고(High)</span>: 대형 은행(K-Biz 등) 선점</td>
+                <td><span style="color:#22c55e;font-weight:600;">중저(Low)</span>: 파편화된 핀테크 플레이어</td>
+              </tr>
+              <tr>
+                <td>타겟 비용 영역</td>
+                <td>고정비/직접비 위주 (은행 앱 한계)</td>
+                <td>기타 판관비(SG&amp;A) (SaaS 중심)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>시장 잠재력 측면에서, 법인 결제 서비스에 대한 MSME의 높은 수요와 높은 구매력을 가진 대표적인 국가는 <span class="summary-highlight">Thailand, Malaysia</span>임</p>
+
+          <div class="summary-subheading">높은 수요 (GDP × underpenetration)</div>
+          <div class="summary-sub">Thailand의 MSME는 179B USD 규모로 GDP의 35%를 차지하나, 법인의 운전자본 중 31%만 은행 계좌를 통해 거래되며 침투율이 낮음</div>
+          <div class="summary-sub">Malaysia의 MSME는 134B USD 규모로 GDP의 39%를 차지하나, 법인 계좌를 통해 결제되는 비율이 마찬가지로 38%밖에 되지 않음</div>
+
+          <div class="summary-subheading">기업당 구매력 (size of wallet, GDP contribution by size) <span class="summary-red">*확인 필요</span></div>
           <ul>
-            <li><span class="summary-highlight"><strong>BaaS 기반 화이트라벨 전략:</strong></span> 직접 라이선스를 취득하는 대신, Xendit 등 로컬 라이선스 보유사 API를 활용해 가상 계좌 및 결제망을 확보하여 법적 책임을 최소화하고 출시 속도를 극대화함</li>
-            <li><span class="summary-highlight"><strong>법인카드/QR 동시 제공:</strong></span> DuitNow QR, 온라인·해외 결제는 Visa 카드를 단일 플랫폼에서 제공</li>
-            <li><span class="summary-highlight"><strong>전략적 파트너십:</strong></span> 1.8만 개 가맹점을 보유한 StoreHub(POS) 등 현지 플랫폼과 연동하여, 가맹점주 및 직원들을 위한 '전용 경비 관리 모듈'로 빠르게 점유율 확보</li>
+            <li>태국은 300만 개, 179B USD 규모의 MSME 중 50%가 Medium size 규모로 consolidated market임</li>
+            <li>말레이시아는 100만 개, 134B USD 규모의 MSME 중 상대적으로 Small size의 기업이 많은 것으로 추정됨 <span class="summary-red">*확인 필요</span></li>
           </ul>
-        </div>
-        <div class="summary-grey-box">
-          <h3>Step 2: Thailand 시장 틈새 공략</h3>
+
+          <p style="margin-top:0.75rem;">다만 두 국가의 경쟁 강도 및 업체별 포지션은 상이함</p>
+
+          <div class="summary-subheading">경쟁강도 <span class="summary-red">*확인 필요</span></div>
           <ul>
-            <li><span class="summary-highlight"><strong>은행 API 연동 SaaS 모델:</strong></span> 결제 라이선스를 따지 않고, 은행의 Open Banking API를 활용하여 지출 내역을 시각화하고 회계 프로그램(FlowAccount 등)에 자동 전송해주는 '순수 SaaS' 툴로 접근</li>
-            <li><span class="summary-highlight"><strong>고도화된 워크플로우:</strong></span> 은행 앱이 제공하지 못하는 '다단계 승인 구조' 및 'AI 영수증 자동 처리' 기능을 내세워 프리미엄 중소기업 수요 공략</li>
+            <li>태국은 3대 대형 은행들이 이미 법인 QR(PromptPay 기반)을 보급 중임. 다만, 보수적인 보안 정책으로 인해 사장의 오퍼레이션 부하 존재 (모든 결제 건마다 사장 승인 푸시 발생)</li>
+            <li>말레이시아는 Swipey, Airwallex 등이 '법인 카드' 중심으로 포진해 있으나, 기업들의 실제 서비스 사용률은 낮음</li>
           </ul>
-        </div>
-        <p style="margin-top:0.75rem;"><strong>&lt;User journey 차별화&gt;</strong></p>
-        <h3>1) 결제 승인</h3>
-        <p>Thailand — K BIZ는 모든 결제 건에 사장(Authorizer) 수동 승인이 필요하여 병목 발생</p>
-        <p>Malaysia — Airwallex·Swipey는 사장 사전 승인 없이 한도 내 자유 결제 가능, CHIP은 pre-approval 시 자유 결제 가능하나 QR 전용으로 온라인/해외 결제 불가</p>
-        <p><span class="storehub-arrow">⇒ '사전 승인 워크플로우' + 'MCC Filtering'을 QR·카드 모두에 적용하여 결제 전 사장 승인과 업종 제한을 동시 적용</span></p>
-        <h3>2) 증빙 수집</h3>
-        <p>Thailand — K BIZ E-Slip은 거래 확인용일 뿐 Thailand 국세청(RD) e-Tax Invoice 규격이 아님</p>
-        <p>Malaysia — 세 업체 모두 LHDN e-Invoice 규격 미지원, CHIP은 회계 소프트웨어 연동도 미출시</p>
-        <p><span class="storehub-arrow">⇒ 결제와 동시에 두 국가의 국세청 규격 e-Invoice 실시간 자동 생성 + 회계 소프트웨어 자동 연동</span></p>
-      </section>
+
+          <div class="summary-subheading">업체별 포지션 (타겟 비용 영역) <span class="summary-red">*확인 필요</span></div>
+          <ul>
+            <li>태국의 은행 서비스는 주로 큰 금액의 고정비(직접비, 판관비의 ~40%) 처리에 최적화되어 있음</li>
+            <li>반대로 말레이시아에서 유일하게 법인QR를 제공하는 CHIP은 기타 변동비(간접비, 판관비의 ~10%) 영역을 타겟팅하여, 대표의 승인 없이도 '사전 설정된 예산' 내에서 직원이 자율적으로 결제하는 구조를 지향함</li>
+          </ul>
+        </section>
+
+        <section class="summary-section">
+          <h2>Why so</h2>
+          <p>두 국가는 공통적으로 1) 은행에서 요구하는 높은 담보 및 서류 요건과 2) 수수료 부담으로 법인카드 발급 및 사용률이 낮음</p>
+          <h3>1)</h3>
+          <ul>
+            <li><strong>복잡한 발행 요건:</strong> 법인 카드 발행 시 감사보고서와 은행 거래 내역 등을 증빙해야 하는데, 보고서 체계가 미비한 영세기업은 이로 인해 발급 자체가 낮음</li>
+            <li><strong>까다로운 한도 설정:</strong> 부동산, 예금 담보를 기반으로 한도를 설정할 수 있어, 담보 자산이 없는 온라인 및 영세기업은 한도 설정에 어려움을 겪음</li>
+          </ul>
+          <h3>2)</h3>
+          <ul>
+            <li><strong>수수료:</strong> 법인카드 결제 수수료는 Thailand 2~4%, Malaysia 0.6%로 법인 QR 결제 0.25~0.5% 대비 높은 <span class="summary-highlight">수수료 부담</span>이 존재함</li>
+            <li><strong>정산 지연:</strong> 또한 신용카드 결제 이후 정산은 일반적으로 <span class="summary-highlight">T+1~3 영업일 소요</span>되어, 법인 비용 관리에 시간적 격차가 존재함</li>
+          </ul>
+        </section>
+
+        <section class="summary-section">
+          <h2>How to</h2>
+          <p style="margin-top:0.5rem;"><strong>&lt;단계별 진출 전략&gt;</strong></p>
+          <p>Thailand &amp; Malaysia 중 진입 용이한 시장 우선 진출</p>
+
+          <div class="summary-grey-box">
+            <h3>Malaysia 진출 전략</h3>
+            <ul>
+              <li><span class="summary-highlight"><strong>전략적 파트너십:</strong></span> 1.8만 개 가맹점을 보유한 StoreHub(POS) 등 현지 플랫폼과 연동하여, 가맹점주 및 직원들을 위한 '전용 경비 관리 모듈'로 빠르게 점유율 확보</li>
+              <li><span class="summary-highlight"><strong>BaaS 기반 화이트라벨 전략:</strong></span> 직접 라이선스를 취득하는 대신, Xendit 등 로컬 라이선스 보유사 API를 활용해 가상 계좌 및 결제망을 확보하여 법적 책임을 최소화하고 출시 속도를 극대화</li>
+              <li><span class="summary-highlight"><strong>법인카드/QR 동시 제공:</strong></span> DuitNow QR, 온라인·해외 결제는 Visa 카드를 단일 플랫폼에서 제공</li>
+            </ul>
+            <p><span class="storehub-arrow">⇒ 말레이시아 현지 네트워크를 기반으로 Fast follower로서 시장 점유율 가속화</span></p>
+          </div>
+
+          <div class="summary-grey-box">
+            <h3>Thailand 진출 전략</h3>
+            <ul>
+              <li><span class="summary-highlight"><strong>전략적 파트너십:</strong></span> SCB Business Anywhere와 파트너십을 통해 기존 은행 법인QR 서비스가 제공해주지 못하는 사전승인 자동 결제 가능한 서비스 런칭</li>
+              <li><span class="summary-highlight"><strong>은행 API 연동 SaaS 모델:</strong></span> 결제 라이선스를 따지 않고, 은행의 Open Banking API를 활용하여 지출 내역을 시각화하고 회계 프로그램(FlowAccount 등)에 자동 전송해주는 'SaaS' 기능도 탑재</li>
+            </ul>
+            <p><span class="storehub-arrow">⇒ 기존 은행 앱이 제공하지 못하는 '다단계/자동 승인 구조' 및 'AI 영수증 자동 처리' 기능을 내세워 프리미엄 중소기업 수요 공략</span></p>
+          </div>
+
+          <p style="margin-top:0.75rem;"><strong>&lt;User journey 차별화&gt;</strong></p>
+
+          <h3>1) 결제 승인</h3>
+          <p>Thailand — K BIZ는 모든 결제 건에 사장(Authorizer) 수동 승인이 필요하여 병목 발생</p>
+          <p>Malaysia — Airwallex·Swipey는 사장 사전 승인 없이 한도 내 자유 결제 가능, CHIP은 pre-approval 시 자유 결제 가능하나 QR 전용으로 온라인/해외 결제 불가</p>
+          <p><span class="storehub-arrow">⇒ '사전 승인 워크플로우' + 'MCC Filtering'을 QR·카드 모두에 적용하여 결제 전 사장 승인과 업종 제한을 동시 적용</span></p>
+
+          <h3>2) 증빙 수집</h3>
+          <p>Thailand — K BIZ E-Slip은 거래 확인용일 뿐 Thailand 국세청(RD) e-Tax Invoice 규격이 아님</p>
+          <p>Malaysia — 세 업체 모두 LHDN e-Invoice 규격 미지원, CHIP은 회계 소프트웨어 연동도 미출시</p>
+          <p><span class="storehub-arrow">⇒ 결제와 동시에 두 국가의 국세청 규격 e-Invoice 실시간 자동 생성 + 회계 소프트웨어 자동 연동</span></p>
+        </section>
+      </div>
+
+      <!-- ===== Outdated ===== -->
+      <div id="summary-panel-old" class="summary-version-panel">
+
+        <section class="summary-section">
+          <h2>Where to</h2>
+          <p>Corporate finance service에 대한 MSME의 높은 수요에도 불구하고, 사용률이 저조한 대표적인 국가는 <span class="summary-highlight">Thailand, Malaysia</span>임</p>
+          <div class="summary-sub">Thailand의 MSME는 179B USD 규모로 GDP의 35%를 차지하나, 법인의 운전자본 중 31%만 은행 계좌를 통해 거래되며 침투율이 낮음</div>
+          <div class="summary-sub">Malaysia의 MSME는 134B USD 규모로 GDP의 39%를 차지하나, 법인 계좌를 통해 결제되는 비율이 마찬가지로 38%밖에 되지 않음</div>
+          <p style="margin-top:0.75rem;">세그먼트별 규모와 직원의 법인 결제가 발생하는 use-case를 고려했을 때 두 국가에서는 각각 아래 세그먼트를 타겟할 수 있음</p>
+          <h3>Thailand</h3>
+          <ul>
+            <li><span class="summary-highlight"><strong>물류</strong> (식자재 도매, 건자재 유통)</span> : 하역/하차 인력비용 결제, 원자재 대금 지불, 배송 중 주유 및 긴급 차량 수리비 처리 등</li>
+            <li><span class="summary-highlight"><strong>서비스</strong> (호텔, F&B 프랜차이즈)</span> : 식재료 결제, 외부 협력업체/프리랜서 용역비 정산</li>
+          </ul>
+          <h3>Malaysia</h3>
+          <ul>
+            <li><span class="summary-highlight"><strong>도소매</strong> (이커머스)</span> : 소모성 자재 구매</li>
+            <li><span class="summary-highlight"><strong>물류</strong> (물류 대행)</span> : 수출입 관세 및 통관 대행, 물류 차량 통행료/주차비 결제 등</li>
+            <li><span class="summary-highlight"><strong>서비스</strong> (광고에이전시, F&B 프랜차이즈)</span> : 식재료 결제, 외부 협력업체/프리랜서 용역비 정산 등</li>
+          </ul>
+        </section>
+        <section class="summary-section">
+          <h2>Why so</h2>
+          <p>두 국가는 공통적으로 1) 은행에서 요구하는 높은 담보 및 서류 요건과 2) 수수료 부담으로 법인카드 발급 및 사용률이 낮음</p>
+          <h3>1)</h3>
+          <ul>
+            <li><strong>복잡한 발행 요건:</strong> 법인 카드 발행 시 <span class="summary-highlight">감사보고서와 은행 거래 내역 등을 증빙</span>해야 하는데, 보고서 체계가 미비한 영세기업은 이로 인해 발급 자체가 낮음</li>
+            <li><strong>까다로운 한도 설정:</strong> <span class="summary-highlight">부동산, 예금 담보를 기반으로 한도</span>를 설정할 수 있어, 담보 자산이 없는 온라인 및 영세기업은 한도 설정에 어려움을 겪음</li>
+          </ul>
+          <h3>2)</h3>
+          <ul>
+            <li><strong>수수료:</strong> 법인카드 결제 수수료는 Thailand 2~4%, Malaysia 0.6%로 법인 QR 결제 0.25~0.5% 대비 높은 <span class="summary-highlight">수수료 부담</span>이 존재함</li>
+            <li><strong>정산 지연:</strong> 또한 신용카드 결제 이후 정산은 일반적으로 <span class="summary-highlight">T+1~3 영업일 소요</span>되어, 법인 비용 관리에 시간적 격차가 존재함</li>
+          </ul>
+        </section>
+        <section class="summary-section">
+          <h2>How to</h2>
+          <p style="margin-top:0.5rem;"><strong>&lt;단계별 진출 전략&gt;</strong></p>
+          <h3>Thailand - "높은 완성도, 높은 장벽" (Low Priority)</h3>
+          <ul>
+            <li>Thailand 정부는 2015년부터 'National e-Payment Master Plan'을 세우고, 모든 은행 계좌를 전화번호나 법인 번호(Tax ID)와 연결하는 PromptPay 인프라를 구축함</li>
+            <li>덕분에 은행들이 이 인프라 위에 법인 전용 관리 기능만 얹으면 바로 '법인 QR 서비스'를 제공할 수 있어, 일찍부터 은행 위주의 법인 QR 서비스가 확대되었음</li>
+            <li><span class="storehub-arrow">⇒ K BIZ(Kasikorn Bank)가 300만 MSME 중 120만을 확보하여 독점적 위치 보유; 신규 진입장벽 존재</span></li>
+            <li>또한 핀테크가 신규 진출 시 E-Money 라이선스가 필요하고, 이때 자본금 요건이 1억 바트(약 38억 원)로 매우 높음</li>
+            <li>그럼에도 불구하고, 1) 해당 은행 계좌에 법인을 등록하고, 모든 직원들도 해당 은행 계좌를 신설해야 하는 까다로운 발급/사용 조건, 2) 사용 후 까다로운 정산 시스템으로 여전히 MSME들의 사용 편의성을 제고할 부분은 존재</li>
+          </ul>
+          <h3>Malaysia - "열린 기회, 유연한 생태계" (High Priority)</h3>
+          <ul>
+            <li>CHIP, Airwallex, Swipey 등 핀테크사가 SME 시장을 혁신 중이나, 아직까지 Thailand만큼 QR 인프라가 단일화되어 있지 않고 침투율도 상대적으로 낮아 <span class="summary-highlight">법인카드/QR이 혼재</span>되어 있는 상황</li>
+            <li>이에 현장 현금결제가 많이 필요한 도소매 유통, F&B 프랜차이즈는 CHIP (QR만 제공), 해외 결제가 많은 테크/에이전시는 Swipey (최근까지 카드만 제공), 다국적 기업 대상 Airwallex (카드만 제공)로 이용층이 분리되어 있음</li>
+            <li>신규 핀테크사가 E-Money 라이선스 확보 시, 자본금 요건이 상대적으로 낮고(약 3억~15억 원), 금융 규제 샌드박스와 BaaS(Banking-as-a-Service) 인프라도 발달하여 우회 진출이 용이한 구조</li>
+            <li>이에, <span class="summary-highlight">법인카드/QR dual track으로 공격적 진출 시, 광범위한 수요층을 확보할 기회</span> 존재</li>
+          </ul>
+          <div class="summary-grey-box">
+            <h3>Step 1: Malaysia 우선 진출</h3>
+            <ul>
+              <li><span class="summary-highlight"><strong>BaaS 기반 화이트라벨 전략:</strong></span> 직접 라이선스를 취득하는 대신, Xendit 등 로컬 라이선스 보유사 API를 활용해 가상 계좌 및 결제망을 확보하여 법적 책임을 최소화하고 출시 속도를 극대화함</li>
+              <li><span class="summary-highlight"><strong>법인카드/QR 동시 제공:</strong></span> DuitNow QR, 온라인·해외 결제는 Visa 카드를 단일 플랫폼에서 제공</li>
+              <li><span class="summary-highlight"><strong>전략적 파트너십:</strong></span> 1.8만 개 가맹점을 보유한 StoreHub(POS) 등 현지 플랫폼과 연동하여, 가맹점주 및 직원들을 위한 '전용 경비 관리 모듈'로 빠르게 점유율 확보</li>
+            </ul>
+          </div>
+          <div class="summary-grey-box">
+            <h3>Step 2: Thailand 시장 틈새 공략</h3>
+            <ul>
+              <li><span class="summary-highlight"><strong>은행 API 연동 SaaS 모델:</strong></span> 결제 라이선스를 따지 않고, 은행의 Open Banking API를 활용하여 지출 내역을 시각화하고 회계 프로그램(FlowAccount 등)에 자동 전송해주는 '순수 SaaS' 툴로 접근</li>
+              <li><span class="summary-highlight"><strong>고도화된 워크플로우:</strong></span> 은행 앱이 제공하지 못하는 '다단계 승인 구조' 및 'AI 영수증 자동 처리' 기능을 내세워 프리미엄 중소기업 수요 공략</li>
+            </ul>
+          </div>
+          <p style="margin-top:0.75rem;"><strong>&lt;User journey 차별화&gt;</strong></p>
+          <h3>1) 결제 승인</h3>
+          <p>Thailand — K BIZ는 모든 결제 건에 사장(Authorizer) 수동 승인이 필요하여 병목 발생</p>
+          <p>Malaysia — Airwallex·Swipey는 사장 사전 승인 없이 한도 내 자유 결제 가능, CHIP은 pre-approval 시 자유 결제 가능하나 QR 전용으로 온라인/해외 결제 불가</p>
+          <p><span class="storehub-arrow">⇒ '사전 승인 워크플로우' + 'MCC Filtering'을 QR·카드 모두에 적용하여 결제 전 사장 승인과 업종 제한을 동시 적용</span></p>
+          <h3>2) 증빙 수집</h3>
+          <p>Thailand — K BIZ E-Slip은 거래 확인용일 뿐 Thailand 국세청(RD) e-Tax Invoice 규격이 아님</p>
+          <p>Malaysia — 세 업체 모두 LHDN e-Invoice 규격 미지원, CHIP은 회계 소프트웨어 연동도 미출시</p>
+          <p><span class="storehub-arrow">⇒ 결제와 동시에 두 국가의 국세청 규격 e-Invoice 실시간 자동 생성 + 회계 소프트웨어 자동 연동</span></p>
+        </section>
+      </div>
+
     </div>
     <div id="page-whereto" class="page">
       <div class="section-heading" style="color: #fef08a;">Step 1. 국가 선정</div>
@@ -1228,10 +1393,15 @@
     document.getElementById(containerId).innerHTML = svg;
   }
 
+  var MSME_COUNTS_2023 = {
+    'Thailand':  { micro: 2739530, small: 439058, medium: 47155, total: 3225743, src: 'OSMEP 2566' },
+    'Malaysia':  { micro: 767421,  small: 314465, medium: 19839, total: 1101725, src: 'DOSM Economic Census 2023' }
+  };
+  function fmtK(n) { return n >= 1000000 ? (n/1000000).toFixed(1) + 'M' : n >= 1000 ? (n/1000).toFixed(0) + 'K' : n.toString(); }
+
   function renderChart3() {
     var avgMediumPct = avgVal(CONTRIB_DATA, function(d) { return d.contribution && d.contribution.mediumPct; });
     var CONTRIB_HEIGHT = 300;
-    // 국가 순서: Thailand, Malaysia, Tajikistan, Kyrgyz Republic, Georgia, Kazakhstan, Armenia, Azerbaijan, Bangladesh
     var CONTRIB_ORDER = ['Thailand', 'Malaysia', 'Tajikistan', 'Kyrgyz Republic', 'Georgia', 'Kazakhstan', 'Armenia', 'Azerbaijan', 'Bangladesh'];
     var contribSorted = CONTRIB_DATA.slice().sort(function(a, b) {
       var ia = CONTRIB_ORDER.indexOf(a.name);
@@ -1241,7 +1411,27 @@
       if (ib >= 0) return 1;
       return 0;
     });
-    var html = '<div class="contribution-bar-wrap" style="position:relative">';
+
+    var calloutHtml = '<div class="contrib-callout-row">';
+    for (var i = 0; i < contribSorted.length; i++) {
+      var d = contribSorted[i];
+      var mc = MSME_COUNTS_2023[d.name];
+      calloutHtml += '<div class="contrib-callout-cell">';
+      if (mc) {
+        calloutHtml += '<div class="contrib-callout-bubble">';
+        calloutHtml += '<strong>' + d.name + ' \'23 기업 수</strong>';
+        calloutHtml += '<span class="cb-line">Micro: <span class="cb-num">' + fmtK(mc.micro) + '</span> (' + (mc.micro/mc.total*100).toFixed(0) + '%)</span>';
+        calloutHtml += '<span class="cb-line">Small: <span class="cb-num">' + fmtK(mc.small) + '</span> (' + (mc.small/mc.total*100).toFixed(0) + '%)</span>';
+        calloutHtml += '<span class="cb-line">Medium: <span class="cb-num">' + fmtK(mc.medium) + '</span> (' + (mc.medium/mc.total*100).toFixed(0) + '%)</span>';
+        calloutHtml += '<span class="cb-line" style="margin-top:2px;color:#8b8b96;font-size:0.58rem;">총 ' + fmtK(mc.total) + ' · ' + mc.src + '</span>';
+        calloutHtml += '</div>';
+      }
+      calloutHtml += '</div>';
+    }
+    calloutHtml += '</div>';
+
+    var html = calloutHtml;
+    html += '<div class="contribution-bar-wrap" style="position:relative">';
     html += '<div class="contribution-avg-line" style="bottom:' + (32 + (avgMediumPct / 100) * CONTRIB_HEIGHT) + 'px;left:0;right:0"></div>';
     for (var i = 0; i < contribSorted.length; i++) {
       var d = contribSorted[i];
@@ -1259,7 +1449,7 @@
       html += '<div class="contribution-bar-label">' + d.name + '</div></div>';
     }
     html += '</div>';
-    html += '<p style="margin-top:0.5rem;font-size:0.75rem;color:#8b8b96">Micro(위) · Small(중간) · Medium-sized(아래) · 붉은 점선: Medium 기여도 평균 ' + avgMediumPct.toFixed(1) + '% · 국가 순서: Thailand→Malaysia→타지키스탄→키르기스스탄→조지아→카자흐스탄→아르메니아→아제르바이잔→방글라데시 · 2023 Scale of Enterprise 데이터 있는 국가만 표시 · Thailand: <a href="https://www.sme.go.th/knowledge/" target="_blank" rel="noopener">OSMEP MSME White Paper</a>·<a href="https://msmeindicator.com/pdf/reviews/gdp/" target="_blank" rel="noopener">มูลนิธิ สวค. GDP MSME</a> 2566</p>';
+    html += '<p style="margin-top:0.5rem;font-size:0.75rem;color:#8b8b96">Micro(위) · Small(중간) · Medium-sized(아래) · 붉은 점선: Medium 기여도 평균 ' + avgMediumPct.toFixed(1) + '% · 국가 순서: Thailand→Malaysia→타지키스탄→키르기스스탄→조지아→카자흐스탄→아르메니아→아제르바이잔→방글라데시 · 2023 Scale of Enterprise 데이터 있는 국가만 표시 · Thailand: <a href="https://www.sme.go.th/knowledge/" target="_blank" rel="noopener">OSMEP MSME White Paper</a>·<a href="https://msmeindicator.com/pdf/reviews/gdp/" target="_blank" rel="noopener">มูลนิธิ สวค. GDP MSME</a> 2566 · Malaysia: <a href="https://www.dosm.gov.my/portal-main/release-content/economic-census-2023-profile-of-small-and-medium-enterprises" target="_blank" rel="noopener">DOSM Economic Census 2023</a></p>';
     document.getElementById('chart3').innerHTML = html;
   }
 
@@ -1598,6 +1788,20 @@
     var state = readHash();
     if (state.pageId !== 'summary' || state.tabId) applyPageAndTab(state.pageId, state.tabId);
   })();
+
+  var summaryVersionTabs = document.getElementById('summary-version-tabs');
+  if (summaryVersionTabs) {
+    summaryVersionTabs.addEventListener('click', function(e) {
+      var btn = e.target.closest('button');
+      if (!btn || !btn.dataset.summaryTab) return;
+      var tabId = btn.dataset.summaryTab;
+      document.querySelectorAll('.summary-version-tabs button').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.summary-version-panel').forEach(function(p) { p.classList.remove('active'); });
+      var panel = document.getElementById('summary-panel-' + tabId);
+      if (panel) panel.classList.add('active');
+    });
+  }
 
   var howtoTabs = document.getElementById('howto-tabs');
   if (howtoTabs) {
